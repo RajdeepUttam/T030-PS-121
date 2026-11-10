@@ -1,0 +1,5 @@
+airline_code,airline_name,low_cost,quick_turn,preferred_gate
+KV,Kaveri Air,false,false,G03
+DW,Deccan Wings,false,false,G09
+SB,SkyBridge International,false,false,G13
+NX,Nilgiri Express,true,true,G12

@@ -1,0 +1,9 @@
+charge_code,rate,unit
+PARKING_C,400.00,Rs per 15 min started after the free period
+PARKING_E,900.00,Rs per 15 min started after the free period
+FREE_CONTACT_MIN,120,min
+FREE_REMOTE_MIN,240,min
+AEROBRIDGE,2500.00,Rs per use
+TOW,6000.00,Rs per movement
+PEAK_SURCHARGE_PCT,25.00,pct on parking 06:00-09:00 and 18:00-21:00
+DELAY_PENALTY,10000.00,Rs per 15 min started
