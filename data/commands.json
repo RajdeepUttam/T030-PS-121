@@ -1,0 +1,658 @@
+[
+  {
+    "action": "BUILD_PLAN",
+    "args": [
+      "2026-10-14"
+    ]
+  },
+  {
+    "action": "PRINT_GATE_PLAN",
+    "args": [
+      "2026-10-14",
+      "PLANNED"
+    ]
+  },
+  {
+    "action": "CANCEL",
+    "args": [
+      "FLT-0011",
+      "2026-10-14 04:40:00"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0017",
+      "2026-10-14 08:01:00",
+      "AIRLINE"
+    ]
+  },
+  {
+    "action": "SWAP",
+    "args": [
+      "ROT-022",
+      "VT-YZP",
+      "B787",
+      "2026-10-14 08:30:00"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0043",
+      "2026-10-14 10:30:00",
+      "AIRLINE"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0042",
+      "2026-10-14 10:40:00",
+      "WEATHER"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0055",
+      "2026-10-14 11:50:00",
+      "AIRPORT"
+    ]
+  },
+  {
+    "action": "DIVERSION_IN",
+    "args": [
+      "DVI-01",
+      "SB",
+      "A350",
+      "VT-DVA",
+      "2026-10-14 11:45:00",
+      "true"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0070",
+      "2026-10-14 16:00:00",
+      "AIRLINE"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0065",
+      "2026-10-14 15:20:00",
+      "AIRLINE"
+    ]
+  },
+  {
+    "action": "CANCEL",
+    "args": [
+      "FLT-0079",
+      "2026-10-14 14:20:00"
+    ]
+  },
+  {
+    "action": "EARLY",
+    "args": [
+      "FLT-0075",
+      "2026-10-14 15:10:00"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0074",
+      "2026-10-14 16:10:00",
+      "AIRLINE"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0080",
+      "2026-10-14 17:00:00",
+      "AIRLINE"
+    ]
+  },
+  {
+    "action": "EARLY",
+    "args": [
+      "FLT-0082",
+      "2026-10-14 16:15:00"
+    ]
+  },
+  {
+    "action": "DIVERSION_IN",
+    "args": [
+      "DVI-02",
+      "KV",
+      "A320",
+      "VT-DVB",
+      "2026-10-14 16:30:00",
+      "false"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0081",
+      "2026-10-14 16:55:00",
+      "AIRLINE"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0084",
+      "2026-10-14 17:15:00",
+      "WEATHER"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0085",
+      "2026-10-14 17:40:00",
+      "AIRLINE"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0083",
+      "2026-10-14 17:00:00",
+      "AIRPORT"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0096",
+      "2026-10-14 19:25:00",
+      "AIRLINE"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0097",
+      "2026-10-14 18:30:00",
+      "AIRPORT"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0051",
+      "2026-10-14 11:45:00",
+      "AIRPORT"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0103",
+      "2026-10-14 19:20:00",
+      "AIRLINE"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0105",
+      "2026-10-14 20:05:00",
+      "AIRLINE"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0106",
+      "2026-10-14 20:15:00",
+      "WEATHER"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0108",
+      "2026-10-14 20:20:00",
+      "WEATHER"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0109",
+      "2026-10-14 20:45:00",
+      "AIRPORT"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0110",
+      "2026-10-14 21:25:00",
+      "AIRLINE"
+    ]
+  },
+  {
+    "action": "DIVERT_OUT",
+    "args": [
+      "FLT-0111",
+      "2026-10-14 20:35:00"
+    ]
+  },
+  {
+    "action": "DELAY",
+    "args": [
+      "FLT-0115",
+      "2026-10-14 21:45:00",
+      "WEATHER"
+    ]
+  },
+  {
+    "action": "PRINT_GATE_PLAN",
+    "args": [
+      "2026-10-14",
+      "FINAL"
+    ]
+  },
+  {
+    "action": "PRINT_SLOT_UTILISATION",
+    "args": [
+      "2026-10-14"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-001"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-002"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-003"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-004"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-005"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-006"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-007"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-008"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-009"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-010"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-011"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-012"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-013"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-014"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-015"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-016"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-017"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-018"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-019"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-020"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-021"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-022"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-023"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-024"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-025"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-026"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-027"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-028"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-029"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-030"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-031"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-032"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-033"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-034"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-035"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-036"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-037"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-038"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-039"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-040"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-041"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-042"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-043"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-044"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-045"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-046"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-047"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-048"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-049"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-050"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-051"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-052"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-053"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-054"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-055"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-056"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-057"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-058"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-059"
+    ]
+  },
+  {
+    "action": "PRINT_TASKS",
+    "args": [
+      "ROT-060"
+    ]
+  },
+  {
+    "action": "PRINT_CHARGES",
+    "args": [
+      "KV",
+      "2026-10-14"
+    ]
+  },
+  {
+    "action": "PRINT_CHARGES",
+    "args": [
+      "DW",
+      "2026-10-14"
+    ]
+  },
+  {
+    "action": "PRINT_CHARGES",
+    "args": [
+      "SB",
+      "2026-10-14"
+    ]
+  },
+  {
+    "action": "PRINT_CHARGES",
+    "args": [
+      "NX",
+      "2026-10-14"
+    ]
+  }
+]

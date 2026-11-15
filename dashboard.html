@@ -1,0 +1,1773 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroOps 360 | Airport Operations & Decision Support</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --bg-main: #0b0f19;
+      --bg-card: #111827;
+      --bg-card-hover: #1f2937;
+      --border-color: #1f293d;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary: #38bdf8;
+      --accent: #6366f1;
+    }
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    .airline-KV { border-left: 4px solid #10b981; }
+    .airline-DW { border-left: 4px solid #3b82f6; }
+    .airline-SB { border-left: 4px solid #a855f7; }
+    .airline-NX { border-left: 4px solid #f59e0b; }
+    .timeline-bar {
+      transition: all 0.2s ease;
+    }
+    .timeline-bar:hover {
+      filter: brightness(1.25);
+      z-index: 20;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+  <!-- TOP APP BAR -->
+  <header class="bg-[#111827] border-b border-[#1f293d] sticky top-0 z-40 px-4 lg:px-8 py-3">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20 text-white font-black text-xl tracking-wider">
+          ✈
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-lg text-white tracking-wide">AeroOps 360</h1>
+            <span class="text-[10px] font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">PS-121 Engine</span>
+            <span id="sim-status-badge" class="text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Plan Baseline
+            </span>
+          </div>
+          <p class="text-xs text-gray-400">Airport Operations & Resource Allocation Control Center • Ops Date: <span class="font-medium text-gray-200">2026-10-14</span></p>
+        </div>
+      </div>
+
+      <!-- Header Quick Metrics -->
+      <div class="flex items-center gap-3 text-xs">
+        <div class="bg-[#0b0f19] px-3 py-1.5 rounded-lg border border-[#1f293d] flex items-center gap-2">
+          <span class="text-gray-400">Flights:</span>
+          <span id="stat-header-flights" class="font-bold text-sky-400">120</span>
+        </div>
+        <div class="bg-[#0b0f19] px-3 py-1.5 rounded-lg border border-[#1f293d] flex items-center gap-2">
+          <span class="text-gray-400">Rotations:</span>
+          <span id="stat-header-rotations" class="font-bold text-indigo-400">60</span>
+        </div>
+        <div class="bg-[#0b0f19] px-3 py-1.5 rounded-lg border border-[#1f293d] flex items-center gap-2">
+          <span class="text-gray-400">Gate Alloc:</span>
+          <span id="stat-header-gate-rate" class="font-bold text-emerald-400">100%</span>
+        </div>
+        <div class="bg-[#0b0f19] px-3 py-1.5 rounded-lg border border-[#1f293d] flex items-center gap-2">
+          <span class="text-gray-400">Peak Runway:</span>
+          <span id="stat-header-peak-runway" class="font-bold text-amber-400">12 / 12</span>
+        </div>
+        <button onclick="resetSimulation()" class="bg-slate-800 hover:bg-slate-700 text-gray-200 px-3 py-1.5 rounded-lg border border-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+          ↺ Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- NAVIGATION TABS -->
+    <div class="max-w-7xl mx-auto mt-3 pt-2 border-t border-[#1f293d]/60 flex items-center gap-1 overflow-x-auto text-xs font-medium">
+      <button onclick="switchTab('overview')" id="tab-btn-overview" class="tab-btn px-3.5 py-1.5 rounded-md text-white bg-sky-600/30 text-sky-300 border border-sky-500/30 font-semibold flex items-center gap-2 transition-all">
+        📊 Overview
+      </button>
+      <button onclick="switchTab('runway')" id="tab-btn-runway" class="tab-btn px-3.5 py-1.5 rounded-md text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 flex items-center gap-2 transition-all">
+        🛫 Runway Capacity (15m Bins)
+      </button>
+      <button onclick="switchTab('gates')" id="tab-btn-gates" class="tab-btn px-3.5 py-1.5 rounded-md text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 flex items-center gap-2 transition-all">
+        🚪 Stand & Gate Allocation (Gantt)
+      </button>
+      <button onclick="switchTab('turnaround')" id="tab-btn-turnaround" class="tab-btn px-3.5 py-1.5 rounded-md text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 flex items-center gap-2 transition-all">
+        ⏱️ Turnaround Tasks (DAG)
+      </button>
+      <button onclick="switchTab('flights')" id="tab-btn-flights" class="tab-btn px-3.5 py-1.5 rounded-md text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 flex items-center gap-2 transition-all">
+        📋 Flight Radar & Rotations
+      </button>
+      <button onclick="switchTab('simulator')" id="tab-btn-simulator" class="tab-btn px-3.5 py-1.5 rounded-md text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 flex items-center gap-2 transition-all">
+        ⚡ Disruption Simulator & Replay
+      </button>
+      <button onclick="switchTab('charges')" id="tab-btn-charges" class="tab-btn px-3.5 py-1.5 rounded-md text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 flex items-center gap-2 transition-all">
+        💰 Charges & Billing Calculator
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN VIEW CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 space-y-6">
+
+    <!-- TAB 1: EXECUTIVE OVERVIEW -->
+    <div id="tab-view-overview" class="space-y-6">
+      
+      <!-- Top Metric Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-4 flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-sky-500/5 rounded-full pointer-events-none"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Total Movements</span>
+            <span class="p-2 bg-sky-500/10 text-sky-400 rounded-lg text-sm">🛫</span>
+          </div>
+          <div class="mt-3">
+            <div id="ov-flights-count" class="text-3xl font-extrabold text-white">120</div>
+            <p class="text-xs text-gray-400 mt-1 flex items-center gap-1.5">
+              <span class="text-emerald-400 font-medium">60 ARR</span> • <span class="text-sky-400 font-medium">60 DEP</span> • 60 Rotations
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-4 flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-indigo-500/5 rounded-full pointer-events-none"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Gate Assignment</span>
+            <span class="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg text-sm">🚪</span>
+          </div>
+          <div class="mt-3">
+            <div id="ov-gate-count" class="text-3xl font-extrabold text-white">24 Stands</div>
+            <p class="text-xs text-gray-400 mt-1">
+              <span class="text-indigo-400 font-medium">18 Contact (Aerobridge)</span> • <span class="text-gray-300 font-medium">6 Remote</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-4 flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-amber-500/5 rounded-full pointer-events-none"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Runway Slot Load</span>
+            <span class="p-2 bg-amber-500/10 text-amber-400 rounded-lg text-sm">⚡</span>
+          </div>
+          <div class="mt-3">
+            <div id="ov-runway-status" class="text-3xl font-extrabold text-amber-400">96 Bins</div>
+            <p class="text-xs text-gray-400 mt-1">
+              Cap: <span class="text-white font-medium">12 mov/15m</span> • <span id="ov-pushed-slots" class="text-amber-400 font-medium">0 Pushed</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-4 flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-emerald-500/5 rounded-full pointer-events-none"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Est. Airport Revenue</span>
+            <span class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg text-sm">₹</span>
+          </div>
+          <div class="mt-3">
+            <div id="ov-total-revenue" class="text-3xl font-extrabold text-emerald-400">₹4.85L</div>
+            <p class="text-xs text-gray-400 mt-1">
+              Parking, Aerobridge & Surcharges
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Second Row: Operational Summary & Distribution -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left 2 Cols: Hourly Movements Distribution -->
+        <div class="lg:col-span-2 bg-[#111827] border border-[#1f293d] rounded-xl p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-sm font-bold text-white tracking-wide">Hourly Movement Distribution</h2>
+              <p class="text-xs text-gray-400">24-hour traffic schedule across runway capacity bins</p>
+            </div>
+            <div class="flex items-center gap-3 text-xs">
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-emerald-500"></span> Arrivals</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-sky-500"></span> Departures</span>
+            </div>
+          </div>
+
+          <div id="hourly-traffic-chart" class="w-full h-56 flex items-end gap-1.5 pt-6 pb-2 px-2 border-b border-[#1f293d]">
+            <!-- Rendered via JS -->
+          </div>
+          <div class="flex justify-between text-[10px] text-gray-400 mt-2 px-1">
+            <span>00:00</span>
+            <span>04:00</span>
+            <span>08:00</span>
+            <span>12:00</span>
+            <span>16:00</span>
+            <span>20:00</span>
+            <span>23:45</span>
+          </div>
+        </div>
+
+        <!-- Right 1 Col: Airline & Fleet Share -->
+        <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-5 flex flex-col justify-between">
+          <div>
+            <h2 class="text-sm font-bold text-white tracking-wide">Airlines & Fleet Composition</h2>
+            <p class="text-xs text-gray-400 mb-4">Active carriers and aircraft gauge categories</p>
+            
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-medium text-gray-200">Deccan Wings (DW)</span>
+                  <span class="text-sky-400 font-bold">52 flights (43%)</span>
+                </div>
+                <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-sky-500 rounded-full" style="width: 43.3%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-medium text-gray-200">Kaveri Air (KV)</span>
+                  <span class="text-emerald-400 font-bold">36 flights (30%)</span>
+                </div>
+                <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-emerald-500 rounded-full" style="width: 30%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-medium text-gray-200">SkyBridge Int'l (SB)</span>
+                  <span class="text-purple-400 font-bold">20 flights (17%)</span>
+                </div>
+                <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-purple-500 rounded-full" style="width: 16.7%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-medium text-gray-200">Nilgiri Express (NX)</span>
+                  <span class="text-amber-400 font-bold">12 flights (10%)</span>
+                </div>
+                <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-amber-500 rounded-full" style="width: 10%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-[#1f293d]">
+            <span class="text-xs font-semibold text-gray-300 uppercase tracking-wider block mb-2">Aircraft Sizes</span>
+            <div class="flex items-center gap-2">
+              <span class="text-xs bg-slate-800 px-2.5 py-1 rounded-md text-gray-200 border border-slate-700">Code C (Narrowbody): <strong>96</strong></span>
+              <span class="text-xs bg-indigo-950/60 text-indigo-300 px-2.5 py-1 rounded-md border border-indigo-700/50">Code E (Widebody): <strong>24</strong></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Operations Rules Card -->
+      <div class="bg-gradient-to-r from-sky-950/30 via-indigo-950/20 to-slate-900 border border-sky-500/20 rounded-xl p-5">
+        <h3 class="text-sm font-bold text-sky-400 flex items-center gap-2 mb-2">
+          <span>ℹ️</span> Airport Operational Constraints & Rules (PS-121)
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-gray-300">
+          <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+            <strong class="text-white block mb-1">Runway Throughput:</strong>
+            Max 12 movements per 15-minute bin. When over capacity, delayed departures (>30m) get highest priority, while arrivals are deferred to subsequent bins.
+          </div>
+          <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+            <strong class="text-white block mb-1">Gate Turnaround Window:</strong>
+            Stand reservation starts 5m prior to scheduled ARR and extends to 25m after scheduled DEP. International flights restricted to INTL pier or swing gates.
+          </div>
+          <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+            <strong class="text-white block mb-1">Turnaround Critical Path:</strong>
+            Deboarding (15m) $ightarrow$ Parallel tasks (Cleaning 20m, Fuelling 25m, Catering 20m, [Security 15m for INTL]) $ightarrow$ Boarding (25m).
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 2: RUNWAY SLOTS & CONGESTION -->
+    <div id="tab-view-runway" class="hidden space-y-6">
+      
+      <!-- Controls & Legend -->
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-sm font-bold text-white tracking-wide">Runway Slot Capacity & Allocation Heatmap</h2>
+          <p class="text-xs text-gray-400">96 discrete 15-minute operational bins. Hard capacity limit = 12 movements/bin.</p>
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500/30 border border-emerald-500/50"></span> Low (&le;6)</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-sky-500/30 border border-sky-500/50"></span> Moderate (7-9)</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500/40 border border-amber-500/60"></span> Peak (10-11)</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-rose-500/50 border border-rose-500"></span> Max / Pushed (12)</span>
+        </div>
+      </div>
+
+      <!-- Heatmap Grid -->
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-5">
+        <div class="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">24-Hour Slot Matrix (Click any bin to view movements & flight details)</div>
+        <div id="runway-bins-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12 gap-2">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Selected Bin Detail Drawer -->
+      <div id="runway-bin-detail" class="bg-[#111827] border border-[#1f293d] rounded-xl p-5 hidden">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#1f293d]">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <span class="text-sky-400">Time Bin:</span> <span id="detail-bin-time">08:00 - 08:15</span>
+            </h3>
+            <p class="text-xs text-gray-400">Total allocated movements: <span id="detail-bin-count" class="font-bold text-white">0</span> / 12 capacity</p>
+          </div>
+          <button onclick="document.getElementById('runway-bin-detail').classList.add('hidden')" class="text-gray-400 hover:text-white text-xs px-2.5 py-1 bg-gray-800 rounded">
+            ✕ Close
+          </button>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-[#0b0f19] text-gray-400 border-b border-[#1f293d]">
+              <tr>
+                <th class="p-2.5">Flight ID</th>
+                <th class="p-2.5">Flight No</th>
+                <th class="p-2.5">Airline</th>
+                <th class="p-2.5">Direction</th>
+                <th class="p-2.5">Scheduled Time</th>
+                <th class="p-2.5">Allocated Bin</th>
+                <th class="p-2.5">Priority</th>
+                <th class="p-2.5">Status</th>
+              </tr>
+            </thead>
+            <tbody id="detail-bin-table-body" class="divide-y divide-[#1f293d]/50 text-gray-200">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 3: GATE & STAND ALLOCATION (GANTT MATRIX) -->
+    <div id="tab-view-gates" class="hidden space-y-6">
+      
+      <!-- Controls Bar -->
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-sm font-bold text-white tracking-wide">Interactive Stand & Gate Allocation Matrix (Gantt)</h2>
+          <p class="text-xs text-gray-400">Stand reservation window: Arrival - 5 mins to Departure + 25 mins.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2.5 text-xs">
+          <select id="filter-gate-pier" onchange="renderGatesGantt()" class="bg-[#0b0f19] border border-[#1f293d] text-gray-200 px-3 py-1.5 rounded-lg">
+            <option value="ALL">All Piers (24 Stands)</option>
+            <option value="DOM_A">DOM_A (G01 - G08)</option>
+            <option value="DOM_B">DOM_B (G09 - G12)</option>
+            <option value="INTL">INTL Pier (G13 - G18)</option>
+            <option value="REMOTE">Remote Stands (R01 - R06)</option>
+          </select>
+
+          <select id="filter-gate-size" onchange="renderGatesGantt()" class="bg-[#0b0f19] border border-[#1f293d] text-gray-200 px-3 py-1.5 rounded-lg">
+            <option value="ALL">All Aircraft Sizes</option>
+            <option value="C">Size Code C Only</option>
+            <option value="E">Size Code E Only</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Gantt Matrix View -->
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-4 overflow-x-auto">
+        
+        <!-- Timeline Header Scale (00:00 to 24:00) -->
+        <div class="min-w-[1000px] mb-2 flex items-center">
+          <div class="w-36 text-xs font-semibold text-gray-400 pl-2">Stand ID & Specs</div>
+          <div class="flex-1 flex justify-between text-[10px] text-gray-400 px-1 border-b border-[#1f293d] pb-1">
+            <span>00:00</span>
+            <span>03:00</span>
+            <span>06:00</span>
+            <span>09:00</span>
+            <span>12:00</span>
+            <span>15:00</span>
+            <span>18:00</span>
+            <span>21:00</span>
+            <span>24:00</span>
+          </div>
+        </div>
+
+        <!-- Stand Rows Container -->
+        <div id="gantt-stands-container" class="min-w-[1000px] space-y-2">
+          <!-- Populated by JS -->
+        </div>
+
+      </div>
+
+      <!-- Stand Conflict Checker Alert Box -->
+      <div id="gate-conflict-alert" class="bg-slate-900 border border-emerald-500/30 rounded-xl p-4 text-xs text-gray-300 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-emerald-400 font-bold text-sm">✓</span>
+          <span><strong>Gate Compatibility & Adjacency:</strong> Zero overlapping stand conflicts detected. Wing-tip adjacency clearance verified across G03-G08, G11-G12, G13-G18.</span>
+        </div>
+        <span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-mono">100% CLEAR</span>
+      </div>
+
+    </div>
+
+    <!-- TAB 4: GROUND TURNAROUND TASKS (DAG) -->
+    <div id="tab-view-turnaround" class="hidden space-y-6">
+      
+      <!-- Rotation Selector & Header -->
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-sm font-bold text-white tracking-wide">Ground Turnaround Task Scheduler & Critical Path</h2>
+          <p class="text-xs text-gray-400">Models aircraft turnaround servicing, precedence DAG, and team assignments</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-xs text-gray-400">Select Rotation:</label>
+          <select id="select-turnaround-rotation" onchange="renderTurnaroundView()" class="bg-[#0b0f19] border border-[#1f293d] text-gray-200 text-xs px-3 py-1.5 rounded-lg font-mono">
+            <!-- Populated by JS with ROT-001 through ROT-060 -->
+          </select>
+        </div>
+      </div>
+
+      <!-- Rotation Info Summary Card -->
+      <div id="turnaround-summary-card" class="bg-[#111827] border border-[#1f293d] rounded-xl p-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 text-xs">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Turnaround Gantt & Workflow -->
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-5 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-[#1f293d]">
+          <div>
+            <h3 class="text-sm font-bold text-white">Servicing Sequence & Dependency Timeline</h3>
+            <p class="text-xs text-gray-400">Precedence: Deboarding &rarr; (Cleaning, Fuelling, Catering, [Security]) &rarr; Boarding</p>
+          </div>
+          <span id="turnaround-duration-badge" class="px-2.5 py-1 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-xs font-mono font-bold">
+            Total Turnaround: 65 mins
+          </span>
+        </div>
+
+        <div id="turnaround-tasks-container" class="space-y-3 pt-2">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Service Teams Availability Matrix -->
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-5">
+        <h3 class="text-sm font-bold text-white mb-1">Service Ground Teams Roster (10 Teams)</h3>
+        <p class="text-xs text-gray-400 mb-4">Availability status and assigned capability</p>
+        <div id="service-teams-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 text-xs">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 5: FLIGHT RADAR & ROTATIONS -->
+    <div id="tab-view-flights" class="hidden space-y-6">
+      
+      <!-- Filter Bar -->
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex-1 max-w-sm">
+          <input type="text" id="flights-search" oninput="renderFlightsTable()" placeholder="Search Flight #, Rotation, Reg, Origin..." class="w-full bg-[#0b0f19] border border-[#1f293d] text-gray-200 text-xs px-3.5 py-2 rounded-lg focus:outline-none focus:border-sky-500">
+        </div>
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <select id="filter-flight-dir" onchange="renderFlightsTable()" class="bg-[#0b0f19] border border-[#1f293d] text-gray-200 px-3 py-1.5 rounded-lg">
+            <option value="ALL">All Directions (ARR & DEP)</option>
+            <option value="ARR">Arrivals Only</option>
+            <option value="DEP">Departures Only</option>
+          </select>
+          <select id="filter-flight-airline" onchange="renderFlightsTable()" class="bg-[#0b0f19] border border-[#1f293d] text-gray-200 px-3 py-1.5 rounded-lg">
+            <option value="ALL">All Airlines</option>
+            <option value="KV">Kaveri Air (KV)</option>
+            <option value="DW">Deccan Wings (DW)</option>
+            <option value="SB">SkyBridge (SB)</option>
+            <option value="NX">Nilgiri Express (NX)</option>
+          </select>
+          <select id="filter-flight-type" onchange="renderFlightsTable()" class="bg-[#0b0f19] border border-[#1f293d] text-gray-200 px-3 py-1.5 rounded-lg">
+            <option value="ALL">Domestic & International</option>
+            <option value="DOM">Domestic Only</option>
+            <option value="INTL">International Only</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Table Container -->
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl overflow-hidden shadow-lg">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-[#0b0f19] text-gray-400 border-b border-[#1f293d] uppercase tracking-wider font-semibold">
+              <tr>
+                <th class="p-3">Flight ID</th>
+                <th class="p-3">Flight No</th>
+                <th class="p-3">Rotation</th>
+                <th class="p-3">Airline</th>
+                <th class="p-3">Dir</th>
+                <th class="p-3">Scheduled Time</th>
+                <th class="p-3">Runway Slot</th>
+                <th class="p-3">Assigned Stand</th>
+                <th class="p-3">Aircraft</th>
+                <th class="p-3">Reg</th>
+                <th class="p-3">Sector</th>
+                <th class="p-3">Type</th>
+              </tr>
+            </thead>
+            <tbody id="flights-table-body" class="divide-y divide-[#1f293d]/60 text-gray-200">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+        <div id="flights-table-count" class="p-3 bg-[#0b0f19] text-xs text-gray-400 border-t border-[#1f293d]">
+          Showing 120 flights
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 6: DISRUPTION SIMULATOR & REPLAY -->
+    <div id="tab-view-simulator" class="hidden space-y-6">
+      
+      <!-- Simulation Controls -->
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-5">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#1f293d]">
+          <div>
+            <h2 class="text-sm font-bold text-white tracking-wide">Operational Day Disruption Engine (commands.txt)</h2>
+            <p class="text-xs text-gray-400">Replay or step through 32 real-world disruptions (delays, cancellations, gauge swaps, diversions)</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="stepNextSimulationEvent()" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow transition-colors">
+              ▶ Step Next Event
+            </button>
+            <button onclick="runAllSimulationEvents()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow transition-colors">
+              ⏩ Run All Events
+            </button>
+            <button onclick="resetSimulation()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-gray-200 rounded-lg text-xs font-semibold transition-colors">
+              ↺ Reset Plan
+            </button>
+          </div>
+        </div>
+
+        <!-- Simulation Progress Bar -->
+        <div class="mt-4">
+          <div class="flex justify-between text-xs mb-1.5">
+            <span class="text-gray-400">Scenario Progress:</span>
+            <span id="sim-progress-text" class="font-bold text-sky-400">0 / 32 Events Applied</span>
+          </div>
+          <div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+            <div id="sim-progress-bar" class="h-full bg-gradient-to-r from-sky-500 to-indigo-600 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two Columns: Custom Event Injector & Live Event Log -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left 1 Col: Custom Event Injector -->
+        <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-5 space-y-4">
+          <h3 class="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+            <span>⚙️</span> Inject Custom Disruption
+          </h3>
+          <p class="text-xs text-gray-400">Test the operational resilience by injecting dynamic changes on any flight</p>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="text-gray-300 block mb-1">Target Flight:</label>
+              <select id="custom-event-flight" class="w-full bg-[#0b0f19] border border-[#1f293d] text-gray-200 px-3 py-2 rounded-lg font-mono">
+                <!-- Populated by JS -->
+              </select>
+            </div>
+
+            <div>
+              <label class="text-gray-300 block mb-1">Disruption Action:</label>
+              <select id="custom-event-action" class="w-full bg-[#0b0f19] border border-[#1f293d] text-gray-200 px-3 py-2 rounded-lg">
+                <option value="DELAY">DELAY (Push Schedule)</option>
+                <option value="CANCEL">CANCEL Flight</option>
+                <option value="EARLY">EARLY Arrival</option>
+                <option value="DIVERSION_IN">DIVERSION_IN (Unscheduled Arrival)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="text-gray-300 block mb-1">Delay Duration (Minutes):</label>
+              <input type="number" id="custom-event-minutes" value="30" step="5" min="5" max="360" class="w-full bg-[#0b0f19] border border-[#1f293d] text-gray-200 px-3 py-2 rounded-lg">
+            </div>
+
+            <div>
+              <label class="text-gray-300 block mb-1">Attributed Reason:</label>
+              <select id="custom-event-reason" class="w-full bg-[#0b0f19] border border-[#1f293d] text-gray-200 px-3 py-2 rounded-lg">
+                <option value="AIRLINE">AIRLINE (Incurs Delay Penalty)</option>
+                <option value="WEATHER">WEATHER (Exempt from Penalty)</option>
+                <option value="AIRPORT">AIRPORT (ATC / Ramp congestion)</option>
+              </select>
+            </div>
+
+            <button onclick="injectCustomEvent()" class="w-full mt-2 py-2.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold rounded-lg shadow-md transition-all">
+              ⚡ Apply & Recalculate Operations
+            </button>
+          </div>
+        </div>
+
+        <!-- Right 2 Cols: Live Event Log -->
+        <div class="lg:col-span-2 bg-[#111827] border border-[#1f293d] rounded-xl p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-[#1f293d]">
+              <h3 class="text-sm font-bold text-white tracking-wide">Live Operations Event Log</h3>
+              <span class="text-[10px] text-gray-400 uppercase tracking-wider font-mono">Real-Time Dispatch</span>
+            </div>
+            
+            <div id="sim-event-log-container" class="space-y-2 max-h-96 overflow-y-auto pr-1">
+              <div class="text-xs text-gray-500 italic p-3 text-center">No simulation events applied yet. Click "Step Next Event" or "Run All Events" above.</div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-[#1f293d] text-[11px] text-gray-400 flex items-center justify-between">
+            <span>Dynamic updates applied to Runway Bins, Gates, and Billing automatically.</span>
+            <span class="text-sky-400 font-medium">Synced in Memory</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- TAB 7: CHARGES & BILLING CALCULATOR -->
+    <div id="tab-view-charges" class="hidden space-y-6">
+      
+      <!-- Top Billing Controls & Airline Filter -->
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-sm font-bold text-white tracking-wide">Aeronautical Charges & Airport Revenue Calculator</h2>
+          <p class="text-xs text-gray-400">Calculates parking fees after free grace period, aerobridge fees, peak surcharges & penalties</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-xs text-gray-400">Select Airline Invoice:</label>
+          <select id="select-billing-airline" onchange="renderBillingView()" class="bg-[#0b0f19] border border-[#1f293d] text-gray-200 text-xs px-3 py-1.5 rounded-lg">
+            <option value="ALL">Total Airport Revenue (All 4 Airlines)</option>
+            <option value="KV">Kaveri Air (KV)</option>
+            <option value="DW">Deccan Wings (DW)</option>
+            <option value="SB">SkyBridge International (SB)</option>
+            <option value="NX">Nilgiri Express (NX)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Financial KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-4">
+          <span class="text-xs text-gray-400 font-semibold uppercase">Total Invoiced Amount</span>
+          <div id="bill-kpi-total" class="text-2xl font-black text-emerald-400 mt-2">₹0</div>
+          <span class="text-[11px] text-gray-500 mt-1 block">Full daily operational billing</span>
+        </div>
+
+        <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-4">
+          <span class="text-xs text-gray-400 font-semibold uppercase">Parking Fees</span>
+          <div id="bill-kpi-parking" class="text-2xl font-black text-sky-400 mt-2">₹0</div>
+          <span class="text-[11px] text-gray-500 mt-1 block">C: ₹400/15m • E: ₹900/15m</span>
+        </div>
+
+        <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-4">
+          <span class="text-xs text-gray-400 font-semibold uppercase">Aerobridge & Peak Surcharge</span>
+          <div id="bill-kpi-aerobridge" class="text-2xl font-black text-indigo-400 mt-2">₹0</div>
+          <span class="text-[11px] text-gray-500 mt-1 block">₹2,500/use + 25% peak hours</span>
+        </div>
+
+        <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-4">
+          <span class="text-xs text-gray-400 font-semibold uppercase">Airline Delay Penalties</span>
+          <div id="bill-kpi-penalties" class="text-2xl font-black text-rose-400 mt-2">₹0</div>
+          <span class="text-[11px] text-gray-500 mt-1 block">₹10,000 per 15 min started</span>
+        </div>
+
+      </div>
+
+      <!-- Itemized Billing Breakdown Table -->
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl overflow-hidden shadow-lg">
+        <div class="p-4 border-b border-[#1f293d] flex items-center justify-between">
+          <h3 class="text-sm font-bold text-white">Itemized Aircraft Rotation Invoices</h3>
+          <button onclick="window.print()" class="text-xs bg-slate-800 hover:bg-slate-700 text-gray-200 px-3 py-1.5 rounded-lg border border-slate-700 font-medium">
+            🖨️ Print / Export
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-[#0b0f19] text-gray-400 border-b border-[#1f293d] uppercase font-semibold">
+              <tr>
+                <th class="p-3">Rotation</th>
+                <th class="p-3">Airline</th>
+                <th class="p-3">Reg & Size</th>
+                <th class="p-3">Assigned Stand</th>
+                <th class="p-3">Ground Time</th>
+                <th class="p-3">Free Limit</th>
+                <th class="p-3">Billable 15m</th>
+                <th class="p-3">Parking (₹)</th>
+                <th class="p-3">Aerobridge (₹)</th>
+                <th class="p-3">Peak (+25%)</th>
+                <th class="p-3">Penalties (₹)</th>
+                <th class="p-3 text-right">Total (₹)</th>
+              </tr>
+            </thead>
+            <tbody id="billing-table-body" class="divide-y divide-[#1f293d]/60 text-gray-200 font-mono">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Rate Master Reference Card -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-xs text-gray-400">
+        <strong class="text-white block mb-2">Billing Reference & Rules (from data/charge_rates.csv):</strong>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div>• Free Contact: <span class="text-white font-mono">120 mins</span></div>
+          <div>• Free Remote: <span class="text-white font-mono">240 mins</span></div>
+          <div>• Parking Code C: <span class="text-white font-mono">₹400 / 15m</span></div>
+          <div>• Parking Code E: <span class="text-white font-mono">₹900 / 15m</span></div>
+          <div>• Aerobridge: <span class="text-white font-mono">₹2,500 / use</span></div>
+          <div>• Peak Hours: <span class="text-white font-mono">06:00-09:00, 18:00-21:00 (+25%)</span></div>
+          <div>• Towing: <span class="text-white font-mono">₹6,000 / movement</span></div>
+          <div>• Airline Delay: <span class="text-white font-mono">₹10,000 / 15m</span></div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FLIGHT DETAIL MODAL -->
+  <div id="flight-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#111827] border border-[#1f293d] rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-[#1f293d]">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">✈</span>
+          <h3 id="modal-flight-title" class="text-base font-bold text-white">Flight Details</h3>
+        </div>
+        <button onclick="document.getElementById('flight-modal').classList.add('hidden')" class="text-gray-400 hover:text-white text-sm p-1">✕</button>
+      </div>
+
+      <div id="modal-flight-content" class="space-y-3 text-xs text-gray-300">
+        <!-- Populated by JS -->
+      </div>
+
+      <div class="pt-3 border-t border-[#1f293d] flex justify-end">
+        <button onclick="document.getElementById('flight-modal').classList.add('hidden')" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-semibold">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMBEDDED COMPLETE DATASET & JAVASCRIPT ENGINE -->
+  <script>
+    const RAW_DATA = {"aircraft_types": [{"aircraft_type": "A320", "size_code": "C", "seats": "180"}, {"aircraft_type": "A321", "size_code": "C", "seats": "220"}, {"aircraft_type": "B738", "size_code": "C", "seats": "189"}, {"aircraft_type": "ATR72", "size_code": "C", "seats": "72"}, {"aircraft_type": "B787", "size_code": "E", "seats": "256"}, {"aircraft_type": "A350", "size_code": "E", "seats": "316"}], "airlines": [{"airline_code": "KV", "airline_name": "Kaveri Air", "low_cost": "false", "quick_turn": "false", "preferred_gate": "G03"}, {"airline_code": "DW", "airline_name": "Deccan Wings", "low_cost": "false", "quick_turn": "false", "preferred_gate": "G09"}, {"airline_code": "SB", "airline_name": "SkyBridge International", "low_cost": "false", "quick_turn": "false", "preferred_gate": "G13"}, {"airline_code": "NX", "airline_name": "Nilgiri Express", "low_cost": "true", "quick_turn": "true", "preferred_gate": "G12"}], "charge_rates": [{"charge_code": "PARKING_C", "rate": "400.00", "unit": "Rs per 15 min started after the free period"}, {"charge_code": "PARKING_E", "rate": "900.00", "unit": "Rs per 15 min started after the free period"}, {"charge_code": "FREE_CONTACT_MIN", "rate": "120", "unit": "min"}, {"charge_code": "FREE_REMOTE_MIN", "rate": "240", "unit": "min"}, {"charge_code": "AEROBRIDGE", "rate": "2500.00", "unit": "Rs per use"}, {"charge_code": "TOW", "rate": "6000.00", "unit": "Rs per movement"}, {"charge_code": "PEAK_SURCHARGE_PCT", "rate": "25.00", "unit": "pct on parking 06:00-09:00 and 18:00-21:00"}, {"charge_code": "DELAY_PENALTY", "rate": "10000.00", "unit": "Rs per 15 min started"}], "flights": [{"flight_id": "FLT-0001", "rotation_id": "ROT-001", "airline_code": "KV", "flight_no": "KV 507", "direction": "ARR", "scheduled_ts": "2026-10-14 05:00:00", "origin_or_destination": "COK", "international": "false", "aircraft_reg": "VT-RXY", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0002", "rotation_id": "ROT-002", "airline_code": "DW", "flight_no": "DW 2101", "direction": "ARR", "scheduled_ts": "2026-10-14 05:05:00", "origin_or_destination": "TRV", "international": "false", "aircraft_reg": "VT-ALF", "aircraft_type": "B738", "connecting_flight_id": "FLT-0031"}, {"flight_id": "FLT-0003", "rotation_id": "ROT-003", "airline_code": "DW", "flight_no": "DW 2116", "direction": "ARR", "scheduled_ts": "2026-10-14 06:10:00", "origin_or_destination": "PNQ", "international": "false", "aircraft_reg": "VT-PHD", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0004", "rotation_id": "ROT-004", "airline_code": "DW", "flight_no": "DW 2131", "direction": "ARR", "scheduled_ts": "2026-10-14 06:15:00", "origin_or_destination": "TRV", "international": "false", "aircraft_reg": "VT-OVP", "aircraft_type": "B738", "connecting_flight_id": ""}, {"flight_id": "FLT-0005", "rotation_id": "ROT-001", "airline_code": "KV", "flight_no": "KV 511", "direction": "DEP", "scheduled_ts": "2026-10-14 06:15:00", "origin_or_destination": "IXE", "international": "false", "aircraft_reg": "VT-RXY", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0006", "rotation_id": "ROT-005", "airline_code": "SB", "flight_no": "SB 809", "direction": "ARR", "scheduled_ts": "2026-10-14 06:18:00", "origin_or_destination": "AMD", "international": "false", "aircraft_reg": "VT-DWT", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0007", "rotation_id": "ROT-006", "airline_code": "KV", "flight_no": "KV 514", "direction": "ARR", "scheduled_ts": "2026-10-14 06:26:00", "origin_or_destination": "IXE", "international": "false", "aircraft_reg": "VT-YEB", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0008", "rotation_id": "ROT-007", "airline_code": "DW", "flight_no": "DW 2143", "direction": "ARR", "scheduled_ts": "2026-10-14 06:34:00", "origin_or_destination": "COK", "international": "false", "aircraft_reg": "VT-PQQ", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0009", "rotation_id": "ROT-008", "airline_code": "DW", "flight_no": "DW 2149", "direction": "ARR", "scheduled_ts": "2026-10-14 06:35:00", "origin_or_destination": "DEL", "international": "false", "aircraft_reg": "VT-KIS", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0010", "rotation_id": "ROT-002", "airline_code": "DW", "flight_no": "DW 2109", "direction": "DEP", "scheduled_ts": "2026-10-14 06:35:00", "origin_or_destination": "MAA", "international": "false", "aircraft_reg": "VT-ALF", "aircraft_type": "B738", "connecting_flight_id": ""}, {"flight_id": "FLT-0011", "rotation_id": "ROT-009", "airline_code": "DW", "flight_no": "DW 2152", "direction": "ARR", "scheduled_ts": "2026-10-14 06:40:00", "origin_or_destination": "DEL", "international": "false", "aircraft_reg": "VT-XMK", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0012", "rotation_id": "ROT-010", "airline_code": "DW", "flight_no": "DW 2162", "direction": "ARR", "scheduled_ts": "2026-10-14 06:42:00", "origin_or_destination": "AMD", "international": "false", "aircraft_reg": "VT-PMQ", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0013", "rotation_id": "ROT-011", "airline_code": "KV", "flight_no": "KV 522", "direction": "ARR", "scheduled_ts": "2026-10-14 06:50:00", "origin_or_destination": "COK", "international": "false", "aircraft_reg": "VT-RPD", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0014", "rotation_id": "ROT-012", "airline_code": "SB", "flight_no": "SB 815", "direction": "ARR", "scheduled_ts": "2026-10-14 06:50:00", "origin_or_destination": "DXB", "international": "true", "aircraft_reg": "VT-YRI", "aircraft_type": "B787", "connecting_flight_id": ""}, {"flight_id": "FLT-0015", "rotation_id": "ROT-013", "airline_code": "KV", "flight_no": "KV 537", "direction": "ARR", "scheduled_ts": "2026-10-14 07:10:00", "origin_or_destination": "DEL", "international": "false", "aircraft_reg": "VT-HDT", "aircraft_type": "A320", "connecting_flight_id": "FLT-0035"}, {"flight_id": "FLT-0016", "rotation_id": "ROT-014", "airline_code": "DW", "flight_no": "DW 2172", "direction": "ARR", "scheduled_ts": "2026-10-14 07:25:00", "origin_or_destination": "DEL", "international": "false", "aircraft_reg": "VT-NYI", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0017", "rotation_id": "ROT-004", "airline_code": "DW", "flight_no": "DW 2134", "direction": "DEP", "scheduled_ts": "2026-10-14 07:30:00", "origin_or_destination": "JAI", "international": "false", "aircraft_reg": "VT-OVP", "aircraft_type": "B738", "connecting_flight_id": ""}, {"flight_id": "FLT-0018", "rotation_id": "ROT-009", "airline_code": "DW", "flight_no": "DW 2161", "direction": "DEP", "scheduled_ts": "2026-10-14 07:30:00", "origin_or_destination": "MAA", "international": "false", "aircraft_reg": "VT-XMK", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0019", "rotation_id": "ROT-011", "airline_code": "KV", "flight_no": "KV 528", "direction": "DEP", "scheduled_ts": "2026-10-14 08:00:00", "origin_or_destination": "IXE", "international": "false", "aircraft_reg": "VT-RPD", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0020", "rotation_id": "ROT-015", "airline_code": "DW", "flight_no": "DW 2177", "direction": "ARR", "scheduled_ts": "2026-10-14 08:01:00", "origin_or_destination": "PNQ", "international": "false", "aircraft_reg": "VT-ATC", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0021", "rotation_id": "ROT-010", "airline_code": "DW", "flight_no": "DW 2168", "direction": "DEP", "scheduled_ts": "2026-10-14 08:02:00", "origin_or_destination": "IXE", "international": "false", "aircraft_reg": "VT-PMQ", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0022", "rotation_id": "ROT-016", "airline_code": "KV", "flight_no": "KV 548", "direction": "ARR", "scheduled_ts": "2026-10-14 08:03:00", "origin_or_destination": "DEL", "international": "false", "aircraft_reg": "VT-AVP", "aircraft_type": "B738", "connecting_flight_id": ""}, {"flight_id": "FLT-0023", "rotation_id": "ROT-007", "airline_code": "DW", "flight_no": "DW 2146", "direction": "DEP", "scheduled_ts": "2026-10-14 08:04:00", "origin_or_destination": "IXE", "international": "false", "aircraft_reg": "VT-PQQ", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0024", "rotation_id": "ROT-017", "airline_code": "DW", "flight_no": "DW 2185", "direction": "ARR", "scheduled_ts": "2026-10-14 08:05:00", "origin_or_destination": "COK", "international": "false", "aircraft_reg": "VT-LLZ", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0025", "rotation_id": "ROT-006", "airline_code": "KV", "flight_no": "KV 520", "direction": "DEP", "scheduled_ts": "2026-10-14 08:06:00", "origin_or_destination": "HYD", "international": "false", "aircraft_reg": "VT-YEB", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0026", "rotation_id": "ROT-018", "airline_code": "DW", "flight_no": "DW 2197", "direction": "ARR", "scheduled_ts": "2026-10-14 08:07:00", "origin_or_destination": "AMD", "international": "false", "aircraft_reg": "VT-CXK", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0027", "rotation_id": "ROT-005", "airline_code": "SB", "flight_no": "SB 810", "direction": "DEP", "scheduled_ts": "2026-10-14 08:08:00", "origin_or_destination": "TRV", "international": "false", "aircraft_reg": "VT-DWT", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0028", "rotation_id": "ROT-019", "airline_code": "KV", "flight_no": "KV 552", "direction": "ARR", "scheduled_ts": "2026-10-14 08:09:00", "origin_or_destination": "AMD", "international": "false", "aircraft_reg": "VT-JOE", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0029", "rotation_id": "ROT-003", "airline_code": "DW", "flight_no": "DW 2122", "direction": "DEP", "scheduled_ts": "2026-10-14 08:10:00", "origin_or_destination": "MAA", "international": "false", "aircraft_reg": "VT-PHD", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0030", "rotation_id": "ROT-020", "airline_code": "DW", "flight_no": "DW 2210", "direction": "ARR", "scheduled_ts": "2026-10-14 08:11:00", "origin_or_destination": "JAI", "international": "false", "aircraft_reg": "VT-LON", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0031", "rotation_id": "ROT-008", "airline_code": "DW", "flight_no": "DW 2150", "direction": "DEP", "scheduled_ts": "2026-10-14 08:20:00", "origin_or_destination": "AMD", "international": "false", "aircraft_reg": "VT-KIS", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0032", "rotation_id": "ROT-013", "airline_code": "KV", "flight_no": "KV 540", "direction": "DEP", "scheduled_ts": "2026-10-14 08:20:00", "origin_or_destination": "HYD", "international": "false", "aircraft_reg": "VT-HDT", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0033", "rotation_id": "ROT-014", "airline_code": "DW", "flight_no": "DW 2175", "direction": "DEP", "scheduled_ts": "2026-10-14 08:30:00", "origin_or_destination": "BOM", "international": "false", "aircraft_reg": "VT-NYI", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0034", "rotation_id": "ROT-021", "airline_code": "NX", "flight_no": "NX 3302", "direction": "ARR", "scheduled_ts": "2026-10-14 09:00:00", "origin_or_destination": "JAI", "international": "false", "aircraft_reg": "VT-IRM", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0035", "rotation_id": "ROT-012", "airline_code": "SB", "flight_no": "SB 819", "direction": "DEP", "scheduled_ts": "2026-10-14 09:30:00", "origin_or_destination": "LHR", "international": "true", "aircraft_reg": "VT-YRI", "aircraft_type": "B787", "connecting_flight_id": ""}, {"flight_id": "FLT-0036", "rotation_id": "ROT-015", "airline_code": "DW", "flight_no": "DW 2183", "direction": "DEP", "scheduled_ts": "2026-10-14 09:31:00", "origin_or_destination": "HYD", "international": "false", "aircraft_reg": "VT-ATC", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0037", "rotation_id": "ROT-016", "airline_code": "KV", "flight_no": "KV 550", "direction": "DEP", "scheduled_ts": "2026-10-14 09:38:00", "origin_or_destination": "PNQ", "international": "false", "aircraft_reg": "VT-AVP", "aircraft_type": "B738", "connecting_flight_id": ""}, {"flight_id": "FLT-0038", "rotation_id": "ROT-022", "airline_code": "KV", "flight_no": "KV 567", "direction": "ARR", "scheduled_ts": "2026-10-14 09:40:00", "origin_or_destination": "PNQ", "international": "false", "aircraft_reg": "VT-CAO", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0039", "rotation_id": "ROT-017", "airline_code": "DW", "flight_no": "DW 2192", "direction": "DEP", "scheduled_ts": "2026-10-14 09:45:00", "origin_or_destination": "CCU", "international": "false", "aircraft_reg": "VT-LLZ", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0040", "rotation_id": "ROT-021", "airline_code": "NX", "flight_no": "NX 3311", "direction": "DEP", "scheduled_ts": "2026-10-14 09:45:00", "origin_or_destination": "AMD", "international": "false", "aircraft_reg": "VT-IRM", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0041", "rotation_id": "ROT-018", "airline_code": "DW", "flight_no": "DW 2202", "direction": "DEP", "scheduled_ts": "2026-10-14 09:52:00", "origin_or_destination": "TRV", "international": "false", "aircraft_reg": "VT-CXK", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0042", "rotation_id": "ROT-023", "airline_code": "KV", "flight_no": "KV 577", "direction": "ARR", "scheduled_ts": "2026-10-14 09:55:00", "origin_or_destination": "COK", "international": "false", "aircraft_reg": "VT-BLU", "aircraft_type": "ATR72", "connecting_flight_id": ""}, {"flight_id": "FLT-0043", "rotation_id": "ROT-024", "airline_code": "SB", "flight_no": "SB 825", "direction": "ARR", "scheduled_ts": "2026-10-14 09:55:00", "origin_or_destination": "BKK", "international": "true", "aircraft_reg": "VT-NMZ", "aircraft_type": "B787", "connecting_flight_id": ""}, {"flight_id": "FLT-0044", "rotation_id": "ROT-019", "airline_code": "KV", "flight_no": "KV 558", "direction": "DEP", "scheduled_ts": "2026-10-14 09:59:00", "origin_or_destination": "CCU", "international": "false", "aircraft_reg": "VT-JOE", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0045", "rotation_id": "ROT-020", "airline_code": "DW", "flight_no": "DW 2218", "direction": "DEP", "scheduled_ts": "2026-10-14 10:06:00", "origin_or_destination": "GOI", "international": "false", "aircraft_reg": "VT-LON", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0046", "rotation_id": "ROT-025", "airline_code": "DW", "flight_no": "DW 2220", "direction": "ARR", "scheduled_ts": "2026-10-14 10:10:00", "origin_or_destination": "GOI", "international": "false", "aircraft_reg": "VT-THV", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0047", "rotation_id": "ROT-026", "airline_code": "NX", "flight_no": "NX 3319", "direction": "ARR", "scheduled_ts": "2026-10-14 10:20:00", "origin_or_destination": "DXB", "international": "true", "aircraft_reg": "VT-VJR", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0048", "rotation_id": "ROT-027", "airline_code": "DW", "flight_no": "DW 2227", "direction": "ARR", "scheduled_ts": "2026-10-14 10:40:00", "origin_or_destination": "MAA", "international": "false", "aircraft_reg": "VT-TOZ", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0049", "rotation_id": "ROT-023", "airline_code": "KV", "flight_no": "KV 585", "direction": "DEP", "scheduled_ts": "2026-10-14 10:45:00", "origin_or_destination": "DEL", "international": "false", "aircraft_reg": "VT-BLU", "aircraft_type": "ATR72", "connecting_flight_id": ""}, {"flight_id": "FLT-0050", "rotation_id": "ROT-028", "airline_code": "KV", "flight_no": "KV 588", "direction": "ARR", "scheduled_ts": "2026-10-14 11:00:00", "origin_or_destination": "HYD", "international": "false", "aircraft_reg": "VT-IAB", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0051", "rotation_id": "ROT-022", "airline_code": "KV", "flight_no": "KV 571", "direction": "DEP", "scheduled_ts": "2026-10-14 11:20:00", "origin_or_destination": "BOM", "international": "false", "aircraft_reg": "VT-CAO", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0052", "rotation_id": "ROT-029", "airline_code": "KV", "flight_no": "KV 601", "direction": "ARR", "scheduled_ts": "2026-10-14 11:25:00", "origin_or_destination": "CCU", "international": "false", "aircraft_reg": "VT-NFD", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0053", "rotation_id": "ROT-030", "airline_code": "NX", "flight_no": "NX 3333", "direction": "ARR", "scheduled_ts": "2026-10-14 11:30:00", "origin_or_destination": "JAI", "international": "false", "aircraft_reg": "VT-ZMN", "aircraft_type": "ATR72", "connecting_flight_id": ""}, {"flight_id": "FLT-0054", "rotation_id": "ROT-026", "airline_code": "NX", "flight_no": "NX 3324", "direction": "DEP", "scheduled_ts": "2026-10-14 11:35:00", "origin_or_destination": "MCT", "international": "true", "aircraft_reg": "VT-VJR", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0055", "rotation_id": "ROT-025", "airline_code": "DW", "flight_no": "DW 2222", "direction": "DEP", "scheduled_ts": "2026-10-14 11:40:00", "origin_or_destination": "PNQ", "international": "false", "aircraft_reg": "VT-THV", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0056", "rotation_id": "ROT-030", "airline_code": "NX", "flight_no": "NX 3339", "direction": "DEP", "scheduled_ts": "2026-10-14 12:05:00", "origin_or_destination": "PNQ", "international": "false", "aircraft_reg": "VT-ZMN", "aircraft_type": "ATR72", "connecting_flight_id": ""}, {"flight_id": "FLT-0057", "rotation_id": "ROT-031", "airline_code": "SB", "flight_no": "SB 833", "direction": "ARR", "scheduled_ts": "2026-10-14 12:10:00", "origin_or_destination": "DOH", "international": "true", "aircraft_reg": "VT-AAI", "aircraft_type": "A350", "connecting_flight_id": ""}, {"flight_id": "FLT-0058", "rotation_id": "ROT-032", "airline_code": "SB", "flight_no": "SB 848", "direction": "ARR", "scheduled_ts": "2026-10-14 12:30:00", "origin_or_destination": "LHR", "international": "true", "aircraft_reg": "VT-ZDO", "aircraft_type": "A350", "connecting_flight_id": ""}, {"flight_id": "FLT-0059", "rotation_id": "ROT-033", "airline_code": "DW", "flight_no": "DW 2234", "direction": "ARR", "scheduled_ts": "2026-10-14 13:00:00", "origin_or_destination": "AMD", "international": "false", "aircraft_reg": "VT-LGI", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0060", "rotation_id": "ROT-034", "airline_code": "KV", "flight_no": "KV 618", "direction": "ARR", "scheduled_ts": "2026-10-14 13:10:00", "origin_or_destination": "HYD", "international": "false", "aircraft_reg": "VT-SJS", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0061", "rotation_id": "ROT-035", "airline_code": "SB", "flight_no": "SB 860", "direction": "ARR", "scheduled_ts": "2026-10-14 13:25:00", "origin_or_destination": "BKK", "international": "true", "aircraft_reg": "VT-JLE", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0062", "rotation_id": "ROT-024", "airline_code": "SB", "flight_no": "SB 827", "direction": "DEP", "scheduled_ts": "2026-10-14 13:25:00", "origin_or_destination": "CMB", "international": "true", "aircraft_reg": "VT-NMZ", "aircraft_type": "B787", "connecting_flight_id": ""}, {"flight_id": "FLT-0063", "rotation_id": "ROT-029", "airline_code": "KV", "flight_no": "KV 610", "direction": "DEP", "scheduled_ts": "2026-10-14 13:40:00", "origin_or_destination": "DEL", "international": "false", "aircraft_reg": "VT-NFD", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0064", "rotation_id": "ROT-036", "airline_code": "NX", "flight_no": "NX 3346", "direction": "ARR", "scheduled_ts": "2026-10-14 14:00:00", "origin_or_destination": "CMB", "international": "true", "aircraft_reg": "VT-ZUQ", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0065", "rotation_id": "ROT-034", "airline_code": "KV", "flight_no": "KV 622", "direction": "DEP", "scheduled_ts": "2026-10-14 14:40:00", "origin_or_destination": "JAI", "international": "false", "aircraft_reg": "VT-SJS", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0066", "rotation_id": "ROT-027", "airline_code": "DW", "flight_no": "DW 2231", "direction": "DEP", "scheduled_ts": "2026-10-14 14:45:00", "origin_or_destination": "TRV", "international": "false", "aircraft_reg": "VT-TOZ", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0067", "rotation_id": "ROT-035", "airline_code": "SB", "flight_no": "SB 866", "direction": "DEP", "scheduled_ts": "2026-10-14 14:45:00", "origin_or_destination": "CMB", "international": "true", "aircraft_reg": "VT-JLE", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0068", "rotation_id": "ROT-037", "airline_code": "SB", "flight_no": "SB 870", "direction": "ARR", "scheduled_ts": "2026-10-14 14:50:00", "origin_or_destination": "CMB", "international": "true", "aircraft_reg": "VT-DGH", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0069", "rotation_id": "ROT-028", "airline_code": "KV", "flight_no": "KV 594", "direction": "DEP", "scheduled_ts": "2026-10-14 15:00:00", "origin_or_destination": "CCU", "international": "false", "aircraft_reg": "VT-IAB", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0070", "rotation_id": "ROT-032", "airline_code": "SB", "flight_no": "SB 854", "direction": "DEP", "scheduled_ts": "2026-10-14 15:00:00", "origin_or_destination": "MCT", "international": "true", "aircraft_reg": "VT-ZDO", "aircraft_type": "A350", "connecting_flight_id": ""}, {"flight_id": "FLT-0071", "rotation_id": "ROT-033", "airline_code": "DW", "flight_no": "DW 2238", "direction": "DEP", "scheduled_ts": "2026-10-14 15:00:00", "origin_or_destination": "PNQ", "international": "false", "aircraft_reg": "VT-LGI", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0072", "rotation_id": "ROT-036", "airline_code": "NX", "flight_no": "NX 3353", "direction": "DEP", "scheduled_ts": "2026-10-14 15:00:00", "origin_or_destination": "KUL", "international": "true", "aircraft_reg": "VT-ZUQ", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0073", "rotation_id": "ROT-038", "airline_code": "KV", "flight_no": "KV 630", "direction": "ARR", "scheduled_ts": "2026-10-14 15:20:00", "origin_or_destination": "DEL", "international": "false", "aircraft_reg": "VT-BEQ", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0074", "rotation_id": "ROT-039", "airline_code": "DW", "flight_no": "DW 2245", "direction": "ARR", "scheduled_ts": "2026-10-14 15:25:00", "origin_or_destination": "COK", "international": "false", "aircraft_reg": "VT-SAR", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0075", "rotation_id": "ROT-040", "airline_code": "SB", "flight_no": "SB 879", "direction": "ARR", "scheduled_ts": "2026-10-14 15:30:00", "origin_or_destination": "MCT", "international": "true", "aircraft_reg": "VT-QYP", "aircraft_type": "B787", "connecting_flight_id": ""}, {"flight_id": "FLT-0076", "rotation_id": "ROT-031", "airline_code": "SB", "flight_no": "SB 841", "direction": "DEP", "scheduled_ts": "2026-10-14 15:40:00", "origin_or_destination": "KUL", "international": "true", "aircraft_reg": "VT-AAI", "aircraft_type": "A350", "connecting_flight_id": ""}, {"flight_id": "FLT-0077", "rotation_id": "ROT-041", "airline_code": "SB", "flight_no": "SB 887", "direction": "ARR", "scheduled_ts": "2026-10-14 16:00:00", "origin_or_destination": "SIN", "international": "true", "aircraft_reg": "VT-OST", "aircraft_type": "A350", "connecting_flight_id": ""}, {"flight_id": "FLT-0078", "rotation_id": "ROT-042", "airline_code": "KV", "flight_no": "KV 641", "direction": "ARR", "scheduled_ts": "2026-10-14 16:10:00", "origin_or_destination": "DOH", "international": "true", "aircraft_reg": "VT-HPS", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0079", "rotation_id": "ROT-043", "airline_code": "DW", "flight_no": "DW 2253", "direction": "ARR", "scheduled_ts": "2026-10-14 16:20:00", "origin_or_destination": "HYD", "international": "false", "aircraft_reg": "VT-LOU", "aircraft_type": "B738", "connecting_flight_id": ""}, {"flight_id": "FLT-0080", "rotation_id": "ROT-044", "airline_code": "SB", "flight_no": "SB 897", "direction": "ARR", "scheduled_ts": "2026-10-14 16:25:00", "origin_or_destination": "FRA", "international": "true", "aircraft_reg": "VT-YNV", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0081", "rotation_id": "ROT-037", "airline_code": "SB", "flight_no": "SB 873", "direction": "DEP", "scheduled_ts": "2026-10-14 16:35:00", "origin_or_destination": "BKK", "international": "true", "aircraft_reg": "VT-DGH", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0082", "rotation_id": "ROT-045", "airline_code": "KV", "flight_no": "KV 652", "direction": "ARR", "scheduled_ts": "2026-10-14 16:40:00", "origin_or_destination": "COK", "international": "false", "aircraft_reg": "VT-VBJ", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0083", "rotation_id": "ROT-038", "airline_code": "KV", "flight_no": "KV 633", "direction": "DEP", "scheduled_ts": "2026-10-14 16:50:00", "origin_or_destination": "DEL", "international": "false", "aircraft_reg": "VT-BEQ", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0084", "rotation_id": "ROT-046", "airline_code": "KV", "flight_no": "KV 664", "direction": "ARR", "scheduled_ts": "2026-10-14 16:55:00", "origin_or_destination": "JAI", "international": "false", "aircraft_reg": "VT-RYS", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0085", "rotation_id": "ROT-047", "airline_code": "NX", "flight_no": "NX 3358", "direction": "ARR", "scheduled_ts": "2026-10-14 16:55:00", "origin_or_destination": "DEL", "international": "false", "aircraft_reg": "VT-LRX", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0086", "rotation_id": "ROT-048", "airline_code": "KV", "flight_no": "KV 674", "direction": "ARR", "scheduled_ts": "2026-10-14 17:00:00", "origin_or_destination": "JAI", "international": "false", "aircraft_reg": "VT-ZQI", "aircraft_type": "B738", "connecting_flight_id": ""}, {"flight_id": "FLT-0087", "rotation_id": "ROT-049", "airline_code": "KV", "flight_no": "KV 688", "direction": "ARR", "scheduled_ts": "2026-10-14 17:00:00", "origin_or_destination": "DXB", "international": "true", "aircraft_reg": "VT-YUG", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0088", "rotation_id": "ROT-039", "airline_code": "DW", "flight_no": "DW 2250", "direction": "DEP", "scheduled_ts": "2026-10-14 17:40:00", "origin_or_destination": "GOI", "international": "false", "aircraft_reg": "VT-SAR", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0089", "rotation_id": "ROT-047", "airline_code": "NX", "flight_no": "NX 3363", "direction": "DEP", "scheduled_ts": "2026-10-14 17:40:00", "origin_or_destination": "CCU", "international": "false", "aircraft_reg": "VT-LRX", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0090", "rotation_id": "ROT-044", "airline_code": "SB", "flight_no": "SB 901", "direction": "DEP", "scheduled_ts": "2026-10-14 17:55:00", "origin_or_destination": "KUL", "international": "true", "aircraft_reg": "VT-YNV", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0091", "rotation_id": "ROT-050", "airline_code": "SB", "flight_no": "SB 910", "direction": "ARR", "scheduled_ts": "2026-10-14 18:00:00", "origin_or_destination": "CMB", "international": "true", "aircraft_reg": "VT-KYO", "aircraft_type": "A350", "connecting_flight_id": ""}, {"flight_id": "FLT-0092", "rotation_id": "ROT-040", "airline_code": "SB", "flight_no": "SB 881", "direction": "DEP", "scheduled_ts": "2026-10-14 18:00:00", "origin_or_destination": "MCT", "international": "true", "aircraft_reg": "VT-QYP", "aircraft_type": "B787", "connecting_flight_id": ""}, {"flight_id": "FLT-0093", "rotation_id": "ROT-045", "airline_code": "KV", "flight_no": "KV 655", "direction": "DEP", "scheduled_ts": "2026-10-14 18:00:00", "origin_or_destination": "AMD", "international": "false", "aircraft_reg": "VT-VBJ", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0094", "rotation_id": "ROT-051", "airline_code": "DW", "flight_no": "DW 2269", "direction": "ARR", "scheduled_ts": "2026-10-14 18:05:00", "origin_or_destination": "CCU", "international": "false", "aircraft_reg": "VT-PYN", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0095", "rotation_id": "ROT-042", "airline_code": "KV", "flight_no": "KV 646", "direction": "DEP", "scheduled_ts": "2026-10-14 18:10:00", "origin_or_destination": "CMB", "international": "true", "aircraft_reg": "VT-HPS", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0096", "rotation_id": "ROT-048", "airline_code": "KV", "flight_no": "KV 681", "direction": "DEP", "scheduled_ts": "2026-10-14 18:10:00", "origin_or_destination": "JAI", "international": "false", "aircraft_reg": "VT-ZQI", "aircraft_type": "B738", "connecting_flight_id": ""}, {"flight_id": "FLT-0097", "rotation_id": "ROT-041", "airline_code": "SB", "flight_no": "SB 892", "direction": "DEP", "scheduled_ts": "2026-10-14 18:20:00", "origin_or_destination": "MCT", "international": "true", "aircraft_reg": "VT-OST", "aircraft_type": "A350", "connecting_flight_id": ""}, {"flight_id": "FLT-0098", "rotation_id": "ROT-046", "airline_code": "KV", "flight_no": "KV 666", "direction": "DEP", "scheduled_ts": "2026-10-14 18:25:00", "origin_or_destination": "CCU", "international": "false", "aircraft_reg": "VT-RYS", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0099", "rotation_id": "ROT-052", "airline_code": "DW", "flight_no": "DW 2277", "direction": "ARR", "scheduled_ts": "2026-10-14 18:30:00", "origin_or_destination": "PNQ", "international": "false", "aircraft_reg": "VT-NXP", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0100", "rotation_id": "ROT-043", "airline_code": "DW", "flight_no": "DW 2262", "direction": "DEP", "scheduled_ts": "2026-10-14 18:35:00", "origin_or_destination": "GOI", "international": "false", "aircraft_reg": "VT-LOU", "aircraft_type": "B738", "connecting_flight_id": ""}, {"flight_id": "FLT-0101", "rotation_id": "ROT-049", "airline_code": "KV", "flight_no": "KV 689", "direction": "DEP", "scheduled_ts": "2026-10-14 18:45:00", "origin_or_destination": "MCT", "international": "true", "aircraft_reg": "VT-YUG", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0102", "rotation_id": "ROT-053", "airline_code": "SB", "flight_no": "SB 925", "direction": "ARR", "scheduled_ts": "2026-10-14 19:00:00", "origin_or_destination": "SIN", "international": "true", "aircraft_reg": "VT-XNE", "aircraft_type": "B787", "connecting_flight_id": ""}, {"flight_id": "FLT-0103", "rotation_id": "ROT-051", "airline_code": "DW", "flight_no": "DW 2275", "direction": "DEP", "scheduled_ts": "2026-10-14 19:00:00", "origin_or_destination": "PNQ", "international": "false", "aircraft_reg": "VT-PYN", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0104", "rotation_id": "ROT-054", "airline_code": "KV", "flight_no": "KV 693", "direction": "ARR", "scheduled_ts": "2026-10-14 19:30:00", "origin_or_destination": "IXE", "international": "false", "aircraft_reg": "VT-CTZ", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0105", "rotation_id": "ROT-052", "airline_code": "DW", "flight_no": "DW 2285", "direction": "DEP", "scheduled_ts": "2026-10-14 19:30:00", "origin_or_destination": "MAA", "international": "false", "aircraft_reg": "VT-NXP", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0106", "rotation_id": "ROT-055", "airline_code": "KV", "flight_no": "KV 706", "direction": "ARR", "scheduled_ts": "2026-10-14 19:55:00", "origin_or_destination": "TRV", "international": "false", "aircraft_reg": "VT-EPA", "aircraft_type": "B738", "connecting_flight_id": ""}, {"flight_id": "FLT-0107", "rotation_id": "ROT-056", "airline_code": "DW", "flight_no": "DW 2286", "direction": "ARR", "scheduled_ts": "2026-10-14 20:00:00", "origin_or_destination": "DEL", "international": "false", "aircraft_reg": "VT-IPL", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0108", "rotation_id": "ROT-057", "airline_code": "SB", "flight_no": "SB 937", "direction": "ARR", "scheduled_ts": "2026-10-14 20:00:00", "origin_or_destination": "DOH", "international": "true", "aircraft_reg": "VT-INR", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0109", "rotation_id": "ROT-050", "airline_code": "SB", "flight_no": "SB 916", "direction": "DEP", "scheduled_ts": "2026-10-14 20:05:00", "origin_or_destination": "LHR", "international": "true", "aircraft_reg": "VT-KYO", "aircraft_type": "A350", "connecting_flight_id": ""}, {"flight_id": "FLT-0110", "rotation_id": "ROT-058", "airline_code": "SB", "flight_no": "SB 943", "direction": "ARR", "scheduled_ts": "2026-10-14 20:40:00", "origin_or_destination": "DXB", "international": "true", "aircraft_reg": "VT-IKU", "aircraft_type": "B787", "connecting_flight_id": ""}, {"flight_id": "FLT-0111", "rotation_id": "ROT-054", "airline_code": "KV", "flight_no": "KV 700", "direction": "DEP", "scheduled_ts": "2026-10-14 20:40:00", "origin_or_destination": "AMD", "international": "false", "aircraft_reg": "VT-CTZ", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0112", "rotation_id": "ROT-055", "airline_code": "KV", "flight_no": "KV 712", "direction": "DEP", "scheduled_ts": "2026-10-14 20:50:00", "origin_or_destination": "COK", "international": "false", "aircraft_reg": "VT-EPA", "aircraft_type": "B738", "connecting_flight_id": ""}, {"flight_id": "FLT-0113", "rotation_id": "ROT-053", "airline_code": "SB", "flight_no": "SB 934", "direction": "DEP", "scheduled_ts": "2026-10-14 21:20:00", "origin_or_destination": "KUL", "international": "true", "aircraft_reg": "VT-XNE", "aircraft_type": "B787", "connecting_flight_id": ""}, {"flight_id": "FLT-0114", "rotation_id": "ROT-056", "airline_code": "DW", "flight_no": "DW 2293", "direction": "DEP", "scheduled_ts": "2026-10-14 21:20:00", "origin_or_destination": "TRV", "international": "false", "aircraft_reg": "VT-IPL", "aircraft_type": "A321", "connecting_flight_id": ""}, {"flight_id": "FLT-0115", "rotation_id": "ROT-059", "airline_code": "KV", "flight_no": "KV 717", "direction": "ARR", "scheduled_ts": "2026-10-14 21:25:00", "origin_or_destination": "JAI", "international": "false", "aircraft_reg": "VT-AJW", "aircraft_type": "B738", "connecting_flight_id": ""}, {"flight_id": "FLT-0116", "rotation_id": "ROT-060", "airline_code": "SB", "flight_no": "SB 958", "direction": "ARR", "scheduled_ts": "2026-10-14 21:35:00", "origin_or_destination": "KUL", "international": "true", "aircraft_reg": "VT-EXM", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0117", "rotation_id": "ROT-057", "airline_code": "SB", "flight_no": "SB 938", "direction": "DEP", "scheduled_ts": "2026-10-14 22:00:00", "origin_or_destination": "FRA", "international": "true", "aircraft_reg": "VT-INR", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0118", "rotation_id": "ROT-060", "airline_code": "SB", "flight_no": "SB 965", "direction": "DEP", "scheduled_ts": "2026-10-14 22:40:00", "origin_or_destination": "CMB", "international": "true", "aircraft_reg": "VT-EXM", "aircraft_type": "A320", "connecting_flight_id": ""}, {"flight_id": "FLT-0119", "rotation_id": "ROT-059", "airline_code": "KV", "flight_no": "KV 720", "direction": "DEP", "scheduled_ts": "2026-10-14 23:10:00", "origin_or_destination": "COK", "international": "false", "aircraft_reg": "VT-AJW", "aircraft_type": "B738", "connecting_flight_id": ""}, {"flight_id": "FLT-0120", "rotation_id": "ROT-058", "airline_code": "SB", "flight_no": "SB 952", "direction": "DEP", "scheduled_ts": "2026-10-14 23:25:00", "origin_or_destination": "CMB", "international": "true", "aircraft_reg": "VT-IKU", "aircraft_type": "B787", "connecting_flight_id": ""}], "gate_adjacency": [{"gate_id": "G03", "adjacent_gate_id": "G04"}, {"gate_id": "G04", "adjacent_gate_id": "G03"}, {"gate_id": "G04", "adjacent_gate_id": "G05"}, {"gate_id": "G05", "adjacent_gate_id": "G04"}, {"gate_id": "G06", "adjacent_gate_id": "G07"}, {"gate_id": "G07", "adjacent_gate_id": "G06"}, {"gate_id": "G07", "adjacent_gate_id": "G08"}, {"gate_id": "G08", "adjacent_gate_id": "G07"}, {"gate_id": "G11", "adjacent_gate_id": "G12"}, {"gate_id": "G12", "adjacent_gate_id": "G11"}, {"gate_id": "G13", "adjacent_gate_id": "G14"}, {"gate_id": "G14", "adjacent_gate_id": "G13"}, {"gate_id": "G14", "adjacent_gate_id": "G15"}, {"gate_id": "G15", "adjacent_gate_id": "G14"}, {"gate_id": "G15", "adjacent_gate_id": "G16"}, {"gate_id": "G16", "adjacent_gate_id": "G15"}, {"gate_id": "G16", "adjacent_gate_id": "G17"}, {"gate_id": "G17", "adjacent_gate_id": "G16"}, {"gate_id": "G17", "adjacent_gate_id": "G18"}, {"gate_id": "G18", "adjacent_gate_id": "G17"}], "runway_capacity": [{"bin_start": "2026-10-14 00:00:00", "bin_end": "2026-10-14 00:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 00:15:00", "bin_end": "2026-10-14 00:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 00:30:00", "bin_end": "2026-10-14 00:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 00:45:00", "bin_end": "2026-10-14 01:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 01:00:00", "bin_end": "2026-10-14 01:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 01:15:00", "bin_end": "2026-10-14 01:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 01:30:00", "bin_end": "2026-10-14 01:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 01:45:00", "bin_end": "2026-10-14 02:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 02:00:00", "bin_end": "2026-10-14 02:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 02:15:00", "bin_end": "2026-10-14 02:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 02:30:00", "bin_end": "2026-10-14 02:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 02:45:00", "bin_end": "2026-10-14 03:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 03:00:00", "bin_end": "2026-10-14 03:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 03:15:00", "bin_end": "2026-10-14 03:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 03:30:00", "bin_end": "2026-10-14 03:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 03:45:00", "bin_end": "2026-10-14 04:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 04:00:00", "bin_end": "2026-10-14 04:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 04:15:00", "bin_end": "2026-10-14 04:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 04:30:00", "bin_end": "2026-10-14 04:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 04:45:00", "bin_end": "2026-10-14 05:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 05:00:00", "bin_end": "2026-10-14 05:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 05:15:00", "bin_end": "2026-10-14 05:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 05:30:00", "bin_end": "2026-10-14 05:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 05:45:00", "bin_end": "2026-10-14 06:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 06:00:00", "bin_end": "2026-10-14 06:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 06:15:00", "bin_end": "2026-10-14 06:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 06:30:00", "bin_end": "2026-10-14 06:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 06:45:00", "bin_end": "2026-10-14 07:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 07:00:00", "bin_end": "2026-10-14 07:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 07:15:00", "bin_end": "2026-10-14 07:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 07:30:00", "bin_end": "2026-10-14 07:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 07:45:00", "bin_end": "2026-10-14 08:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 08:00:00", "bin_end": "2026-10-14 08:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 08:15:00", "bin_end": "2026-10-14 08:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 08:30:00", "bin_end": "2026-10-14 08:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 08:45:00", "bin_end": "2026-10-14 09:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 09:00:00", "bin_end": "2026-10-14 09:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 09:15:00", "bin_end": "2026-10-14 09:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 09:30:00", "bin_end": "2026-10-14 09:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 09:45:00", "bin_end": "2026-10-14 10:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 10:00:00", "bin_end": "2026-10-14 10:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 10:15:00", "bin_end": "2026-10-14 10:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 10:30:00", "bin_end": "2026-10-14 10:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 10:45:00", "bin_end": "2026-10-14 11:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 11:00:00", "bin_end": "2026-10-14 11:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 11:15:00", "bin_end": "2026-10-14 11:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 11:30:00", "bin_end": "2026-10-14 11:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 11:45:00", "bin_end": "2026-10-14 12:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 12:00:00", "bin_end": "2026-10-14 12:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 12:15:00", "bin_end": "2026-10-14 12:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 12:30:00", "bin_end": "2026-10-14 12:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 12:45:00", "bin_end": "2026-10-14 13:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 13:00:00", "bin_end": "2026-10-14 13:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 13:15:00", "bin_end": "2026-10-14 13:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 13:30:00", "bin_end": "2026-10-14 13:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 13:45:00", "bin_end": "2026-10-14 14:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 14:00:00", "bin_end": "2026-10-14 14:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 14:15:00", "bin_end": "2026-10-14 14:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 14:30:00", "bin_end": "2026-10-14 14:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 14:45:00", "bin_end": "2026-10-14 15:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 15:00:00", "bin_end": "2026-10-14 15:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 15:15:00", "bin_end": "2026-10-14 15:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 15:30:00", "bin_end": "2026-10-14 15:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 15:45:00", "bin_end": "2026-10-14 16:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 16:00:00", "bin_end": "2026-10-14 16:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 16:15:00", "bin_end": "2026-10-14 16:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 16:30:00", "bin_end": "2026-10-14 16:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 16:45:00", "bin_end": "2026-10-14 17:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 17:00:00", "bin_end": "2026-10-14 17:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 17:15:00", "bin_end": "2026-10-14 17:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 17:30:00", "bin_end": "2026-10-14 17:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 17:45:00", "bin_end": "2026-10-14 18:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 18:00:00", "bin_end": "2026-10-14 18:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 18:15:00", "bin_end": "2026-10-14 18:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 18:30:00", "bin_end": "2026-10-14 18:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 18:45:00", "bin_end": "2026-10-14 19:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 19:00:00", "bin_end": "2026-10-14 19:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 19:15:00", "bin_end": "2026-10-14 19:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 19:30:00", "bin_end": "2026-10-14 19:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 19:45:00", "bin_end": "2026-10-14 20:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 20:00:00", "bin_end": "2026-10-14 20:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 20:15:00", "bin_end": "2026-10-14 20:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 20:30:00", "bin_end": "2026-10-14 20:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 20:45:00", "bin_end": "2026-10-14 21:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 21:00:00", "bin_end": "2026-10-14 21:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 21:15:00", "bin_end": "2026-10-14 21:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 21:30:00", "bin_end": "2026-10-14 21:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 21:45:00", "bin_end": "2026-10-14 22:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 22:00:00", "bin_end": "2026-10-14 22:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 22:15:00", "bin_end": "2026-10-14 22:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 22:30:00", "bin_end": "2026-10-14 22:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 22:45:00", "bin_end": "2026-10-14 23:00:00", "capacity": "12"}, {"bin_start": "2026-10-14 23:00:00", "bin_end": "2026-10-14 23:15:00", "capacity": "12"}, {"bin_start": "2026-10-14 23:15:00", "bin_end": "2026-10-14 23:30:00", "capacity": "12"}, {"bin_start": "2026-10-14 23:30:00", "bin_end": "2026-10-14 23:45:00", "capacity": "12"}, {"bin_start": "2026-10-14 23:45:00", "bin_end": "2026-10-15 00:00:00", "capacity": "12"}], "service_teams": [{"team_id": "TEAM-01", "task_type": "PAX_HANDLING", "team_size": "4"}, {"team_id": "TEAM-02", "task_type": "PAX_HANDLING", "team_size": "5"}, {"team_id": "TEAM-03", "task_type": "PAX_HANDLING", "team_size": "6"}, {"team_id": "TEAM-04", "task_type": "CLEANING", "team_size": "6"}, {"team_id": "TEAM-05", "task_type": "CLEANING", "team_size": "6"}, {"team_id": "TEAM-06", "task_type": "FUELLING", "team_size": "4"}, {"team_id": "TEAM-07", "task_type": "FUELLING", "team_size": "4"}, {"team_id": "TEAM-08", "task_type": "CATERING", "team_size": "6"}, {"team_id": "TEAM-09", "task_type": "CATERING", "team_size": "6"}, {"team_id": "TEAM-10", "task_type": "SECURITY", "team_size": "6"}], "stands": [{"stand_id": "G01", "stand_type": "CONTACT", "pier": "DOM_A", "max_size_code": "C", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "155", "preferred_airline": ""}, {"stand_id": "G02", "stand_type": "CONTACT", "pier": "DOM_A", "max_size_code": "C", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "190", "preferred_airline": ""}, {"stand_id": "G03", "stand_type": "CONTACT", "pier": "DOM_A", "max_size_code": "C", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "225", "preferred_airline": "KV"}, {"stand_id": "G04", "stand_type": "CONTACT", "pier": "DOM_A", "max_size_code": "E", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "260", "preferred_airline": ""}, {"stand_id": "G05", "stand_type": "CONTACT", "pier": "DOM_A", "max_size_code": "C", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "295", "preferred_airline": ""}, {"stand_id": "G06", "stand_type": "CONTACT", "pier": "DOM_A", "max_size_code": "C", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "330", "preferred_airline": ""}, {"stand_id": "G07", "stand_type": "CONTACT", "pier": "DOM_A", "max_size_code": "E", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "365", "preferred_airline": ""}, {"stand_id": "G08", "stand_type": "CONTACT", "pier": "DOM_A", "max_size_code": "C", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "400", "preferred_airline": ""}, {"stand_id": "G09", "stand_type": "CONTACT", "pier": "DOM_B", "max_size_code": "C", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "155", "preferred_airline": "DW"}, {"stand_id": "G10", "stand_type": "CONTACT", "pier": "DOM_B", "max_size_code": "C", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "190", "preferred_airline": ""}, {"stand_id": "G11", "stand_type": "CONTACT", "pier": "DOM_B", "max_size_code": "C", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "225", "preferred_airline": ""}, {"stand_id": "G12", "stand_type": "CONTACT", "pier": "DOM_B", "max_size_code": "E", "swing_gate": "true", "aerobridge": "true", "walking_distance_m": "900", "preferred_airline": "NX"}, {"stand_id": "G13", "stand_type": "CONTACT", "pier": "INTL", "max_size_code": "E", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "155", "preferred_airline": "SB"}, {"stand_id": "G14", "stand_type": "CONTACT", "pier": "INTL", "max_size_code": "C", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "190", "preferred_airline": ""}, {"stand_id": "G15", "stand_type": "CONTACT", "pier": "INTL", "max_size_code": "E", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "225", "preferred_airline": ""}, {"stand_id": "G16", "stand_type": "CONTACT", "pier": "INTL", "max_size_code": "C", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "260", "preferred_airline": ""}, {"stand_id": "G17", "stand_type": "CONTACT", "pier": "INTL", "max_size_code": "E", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "295", "preferred_airline": ""}, {"stand_id": "G18", "stand_type": "CONTACT", "pier": "INTL", "max_size_code": "C", "swing_gate": "false", "aerobridge": "true", "walking_distance_m": "330", "preferred_airline": ""}, {"stand_id": "R01", "stand_type": "REMOTE", "pier": "REMOTE", "max_size_code": "E", "swing_gate": "false", "aerobridge": "false", "walking_distance_m": "0", "preferred_airline": ""}, {"stand_id": "R02", "stand_type": "REMOTE", "pier": "REMOTE", "max_size_code": "E", "swing_gate": "false", "aerobridge": "false", "walking_distance_m": "0", "preferred_airline": ""}, {"stand_id": "R03", "stand_type": "REMOTE", "pier": "REMOTE", "max_size_code": "E", "swing_gate": "false", "aerobridge": "false", "walking_distance_m": "0", "preferred_airline": ""}, {"stand_id": "R04", "stand_type": "REMOTE", "pier": "REMOTE", "max_size_code": "C", "swing_gate": "false", "aerobridge": "false", "walking_distance_m": "0", "preferred_airline": ""}, {"stand_id": "R05", "stand_type": "REMOTE", "pier": "REMOTE", "max_size_code": "C", "swing_gate": "false", "aerobridge": "false", "walking_distance_m": "0", "preferred_airline": ""}, {"stand_id": "R06", "stand_type": "REMOTE", "pier": "REMOTE", "max_size_code": "C", "swing_gate": "false", "aerobridge": "false", "walking_distance_m": "0", "preferred_airline": ""}], "task_durations": [{"task": "DEBOARDING", "duration_min": "15", "team_type": "PAX_HANDLING", "predecessors": "", "international_only": "false"}, {"task": "CLEANING", "duration_min": "20", "team_type": "CLEANING", "predecessors": "DEBOARDING", "international_only": "false"}, {"task": "FUELLING", "duration_min": "25", "team_type": "FUELLING", "predecessors": "DEBOARDING", "international_only": "false"}, {"task": "CATERING", "duration_min": "20", "team_type": "CATERING", "predecessors": "DEBOARDING", "international_only": "false"}, {"task": "SECURITY_CHECK", "duration_min": "15", "team_type": "SECURITY", "predecessors": "CLEANING;FUELLING;CATERING", "international_only": "true"}, {"task": "BOARDING", "duration_min": "25", "team_type": "PAX_HANDLING", "predecessors": "CLEANING;FUELLING;CATERING;SECURITY_CHECK", "international_only": "false"}]};
+    const RAW_COMMANDS = [{"action": "BUILD_PLAN", "args": ["2026-10-14"]}, {"action": "PRINT_GATE_PLAN", "args": ["2026-10-14", "PLANNED"]}, {"action": "CANCEL", "args": ["FLT-0011", "2026-10-14 04:40:00"]}, {"action": "DELAY", "args": ["FLT-0017", "2026-10-14 08:01:00", "AIRLINE"]}, {"action": "SWAP", "args": ["ROT-022", "VT-YZP", "B787", "2026-10-14 08:30:00"]}, {"action": "DELAY", "args": ["FLT-0043", "2026-10-14 10:30:00", "AIRLINE"]}, {"action": "DELAY", "args": ["FLT-0042", "2026-10-14 10:40:00", "WEATHER"]}, {"action": "DELAY", "args": ["FLT-0055", "2026-10-14 11:50:00", "AIRPORT"]}, {"action": "DIVERSION_IN", "args": ["DVI-01", "SB", "A350", "VT-DVA", "2026-10-14 11:45:00", "true"]}, {"action": "DELAY", "args": ["FLT-0070", "2026-10-14 16:00:00", "AIRLINE"]}, {"action": "DELAY", "args": ["FLT-0065", "2026-10-14 15:20:00", "AIRLINE"]}, {"action": "CANCEL", "args": ["FLT-0079", "2026-10-14 14:20:00"]}, {"action": "EARLY", "args": ["FLT-0075", "2026-10-14 15:10:00"]}, {"action": "DELAY", "args": ["FLT-0074", "2026-10-14 16:10:00", "AIRLINE"]}, {"action": "DELAY", "args": ["FLT-0080", "2026-10-14 17:00:00", "AIRLINE"]}, {"action": "EARLY", "args": ["FLT-0082", "2026-10-14 16:15:00"]}, {"action": "DIVERSION_IN", "args": ["DVI-02", "KV", "A320", "VT-DVB", "2026-10-14 16:30:00", "false"]}, {"action": "DELAY", "args": ["FLT-0081", "2026-10-14 16:55:00", "AIRLINE"]}, {"action": "DELAY", "args": ["FLT-0084", "2026-10-14 17:15:00", "WEATHER"]}, {"action": "DELAY", "args": ["FLT-0085", "2026-10-14 17:40:00", "AIRLINE"]}, {"action": "DELAY", "args": ["FLT-0083", "2026-10-14 17:00:00", "AIRPORT"]}, {"action": "DELAY", "args": ["FLT-0096", "2026-10-14 19:25:00", "AIRLINE"]}, {"action": "DELAY", "args": ["FLT-0097", "2026-10-14 18:30:00", "AIRPORT"]}, {"action": "DELAY", "args": ["FLT-0051", "2026-10-14 11:45:00", "AIRPORT"]}, {"action": "DELAY", "args": ["FLT-0103", "2026-10-14 19:20:00", "AIRLINE"]}, {"action": "DELAY", "args": ["FLT-0105", "2026-10-14 20:05:00", "AIRLINE"]}, {"action": "DELAY", "args": ["FLT-0106", "2026-10-14 20:15:00", "WEATHER"]}, {"action": "DELAY", "args": ["FLT-0108", "2026-10-14 20:20:00", "WEATHER"]}, {"action": "DELAY", "args": ["FLT-0109", "2026-10-14 20:45:00", "AIRPORT"]}, {"action": "DELAY", "args": ["FLT-0110", "2026-10-14 21:25:00", "AIRLINE"]}, {"action": "DIVERT_OUT", "args": ["FLT-0111", "2026-10-14 20:35:00"]}, {"action": "DELAY", "args": ["FLT-0115", "2026-10-14 21:45:00", "WEATHER"]}, {"action": "PRINT_GATE_PLAN", "args": ["2026-10-14", "FINAL"]}, {"action": "PRINT_SLOT_UTILISATION", "args": ["2026-10-14"]}, {"action": "PRINT_TASKS", "args": ["ROT-001"]}, {"action": "PRINT_TASKS", "args": ["ROT-002"]}, {"action": "PRINT_TASKS", "args": ["ROT-003"]}, {"action": "PRINT_TASKS", "args": ["ROT-004"]}, {"action": "PRINT_TASKS", "args": ["ROT-005"]}, {"action": "PRINT_TASKS", "args": ["ROT-006"]}, {"action": "PRINT_TASKS", "args": ["ROT-007"]}, {"action": "PRINT_TASKS", "args": ["ROT-008"]}, {"action": "PRINT_TASKS", "args": ["ROT-009"]}, {"action": "PRINT_TASKS", "args": ["ROT-010"]}, {"action": "PRINT_TASKS", "args": ["ROT-011"]}, {"action": "PRINT_TASKS", "args": ["ROT-012"]}, {"action": "PRINT_TASKS", "args": ["ROT-013"]}, {"action": "PRINT_TASKS", "args": ["ROT-014"]}, {"action": "PRINT_TASKS", "args": ["ROT-015"]}, {"action": "PRINT_TASKS", "args": ["ROT-016"]}, {"action": "PRINT_TASKS", "args": ["ROT-017"]}, {"action": "PRINT_TASKS", "args": ["ROT-018"]}, {"action": "PRINT_TASKS", "args": ["ROT-019"]}, {"action": "PRINT_TASKS", "args": ["ROT-020"]}, {"action": "PRINT_TASKS", "args": ["ROT-021"]}, {"action": "PRINT_TASKS", "args": ["ROT-022"]}, {"action": "PRINT_TASKS", "args": ["ROT-023"]}, {"action": "PRINT_TASKS", "args": ["ROT-024"]}, {"action": "PRINT_TASKS", "args": ["ROT-025"]}, {"action": "PRINT_TASKS", "args": ["ROT-026"]}, {"action": "PRINT_TASKS", "args": ["ROT-027"]}, {"action": "PRINT_TASKS", "args": ["ROT-028"]}, {"action": "PRINT_TASKS", "args": ["ROT-029"]}, {"action": "PRINT_TASKS", "args": ["ROT-030"]}, {"action": "PRINT_TASKS", "args": ["ROT-031"]}, {"action": "PRINT_TASKS", "args": ["ROT-032"]}, {"action": "PRINT_TASKS", "args": ["ROT-033"]}, {"action": "PRINT_TASKS", "args": ["ROT-034"]}, {"action": "PRINT_TASKS", "args": ["ROT-035"]}, {"action": "PRINT_TASKS", "args": ["ROT-036"]}, {"action": "PRINT_TASKS", "args": ["ROT-037"]}, {"action": "PRINT_TASKS", "args": ["ROT-038"]}, {"action": "PRINT_TASKS", "args": ["ROT-039"]}, {"action": "PRINT_TASKS", "args": ["ROT-040"]}, {"action": "PRINT_TASKS", "args": ["ROT-041"]}, {"action": "PRINT_TASKS", "args": ["ROT-042"]}, {"action": "PRINT_TASKS", "args": ["ROT-043"]}, {"action": "PRINT_TASKS", "args": ["ROT-044"]}, {"action": "PRINT_TASKS", "args": ["ROT-045"]}, {"action": "PRINT_TASKS", "args": ["ROT-046"]}, {"action": "PRINT_TASKS", "args": ["ROT-047"]}, {"action": "PRINT_TASKS", "args": ["ROT-048"]}, {"action": "PRINT_TASKS", "args": ["ROT-049"]}, {"action": "PRINT_TASKS", "args": ["ROT-050"]}, {"action": "PRINT_TASKS", "args": ["ROT-051"]}, {"action": "PRINT_TASKS", "args": ["ROT-052"]}, {"action": "PRINT_TASKS", "args": ["ROT-053"]}, {"action": "PRINT_TASKS", "args": ["ROT-054"]}, {"action": "PRINT_TASKS", "args": ["ROT-055"]}, {"action": "PRINT_TASKS", "args": ["ROT-056"]}, {"action": "PRINT_TASKS", "args": ["ROT-057"]}, {"action": "PRINT_TASKS", "args": ["ROT-058"]}, {"action": "PRINT_TASKS", "args": ["ROT-059"]}, {"action": "PRINT_TASKS", "args": ["ROT-060"]}, {"action": "PRINT_CHARGES", "args": ["KV", "2026-10-14"]}, {"action": "PRINT_CHARGES", "args": ["DW", "2026-10-14"]}, {"action": "PRINT_CHARGES", "args": ["SB", "2026-10-14"]}, {"action": "PRINT_CHARGES", "args": ["NX", "2026-10-14"]}];
+
+    // Application State
+    let appState = {
+      flights: [],
+      stands: [],
+      rotations: [],
+      runwayAllocations: {},
+      simAppliedIndex: 0,
+      activeTab: 'overview',
+      disruptionEvents: []
+    };
+
+    // Helper functions
+    function parseDate(str) {
+      if (!str) return new Date();
+      return new Date(str.replace(' ', 'T'));
+    }
+
+    function formatDate(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      const seconds = String(d.getSeconds()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    function formatTimeOnly(str) {
+      if (!str) return '--:--';
+      const parts = str.split(' ');
+      return parts.length > 1 ? parts[1].substring(0, 5) : str.substring(11, 16);
+    }
+
+    function toBool(val) {
+      if (typeof val === 'boolean') return val;
+      return String(val).trim().toLowerCase() === 'true' || val === '1' || val === 'yes';
+    }
+
+    // ==========================================
+    // CORE CALCULATION ENGINES (RUNWAY & GATES)
+    // ==========================================
+
+    function calculateRunwaySlots(flights) {
+      const BIN_MINUTES = 15;
+      const CAPACITY = 12;
+
+      // Group flights by their scheduled 15-minute bin
+      const sortedFlights = [...flights].sort((a, b) => {
+        return parseDate(a.scheduled_ts) - parseDate(b.scheduled_ts);
+      });
+
+      const binMap = {}; // binKey -> array of flights
+
+      sortedFlights.forEach(f => {
+        const dt = parseDate(f.scheduled_ts);
+        const m = Math.floor(dt.getMinutes() / BIN_MINUTES) * BIN_MINUTES;
+        const binDate = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), dt.getHours(), m, 0);
+        const binKey = formatDate(binDate);
+
+        // Priority calculation
+        let priority = 2; // ARR
+        if (f.direction === 'DEP') {
+          priority = f.is_delayed_over_30 ? 0 : 1;
+        }
+
+        f._scheduled_bin = binKey;
+        f._priority = priority;
+
+        if (!binMap[binKey]) binMap[binKey] = [];
+        binMap[binKey].push(f);
+      });
+
+      // Now allocate bins with overflow logic
+      const allocatedBins = {}; // binKey -> array of allocated flights
+      let overflowQueue = [];
+
+      // Generate all 96 bins for the day 2026-10-14
+      const allBins = [];
+      const baseDay = new Date(2026, 9, 14, 0, 0, 0);
+      for (let i = 0; i < 96; i++) {
+        const b = new Date(baseDay.getTime() + i * 15 * 60000);
+        allBins.push(formatDate(b));
+      }
+
+      allBins.forEach(binKey => {
+        const currentFlights = binMap[binKey] || [];
+        const pool = [...overflowQueue, ...currentFlights];
+
+        // Sort pool by priority (0 first, then 1, then 2), then scheduled time
+        pool.sort((a, b) => {
+          if (a._priority !== b._priority) return a._priority - b._priority;
+          return parseDate(a.scheduled_ts) - parseDate(b.scheduled_ts);
+        });
+
+        const accepted = pool.slice(0, CAPACITY);
+        overflowQueue = pool.slice(CAPACITY);
+
+        accepted.forEach(f => {
+          f.allocated_bin = binKey;
+          f.is_pushed = (f._scheduled_bin !== binKey);
+        });
+
+        allocatedBins[binKey] = accepted;
+      });
+
+      return { allocatedBins, allBins };
+    }
+
+    function calculateGateAllocations(rotations, stands) {
+      const standOccupancy = {}; // standId -> [{start, end, rotId}]
+      stands.forEach(s => standOccupancy[s.stand_id] = []);
+
+      const sortedRotations = [...rotations].sort((a, b) => {
+        return parseDate(a.arr_flight.scheduled_ts) - parseDate(b.arr_flight.scheduled_ts);
+      });
+
+      sortedRotations.forEach(rot => {
+        const arrTime = parseDate(rot.arr_flight.scheduled_ts);
+        const depTime = parseDate(rot.dep_flight.scheduled_ts);
+
+        // Occupancy window: ARR - 5 min to DEP + 25 min
+        const startWindow = new Date(arrTime.getTime() - 5 * 60000);
+        const endWindow = new Date(depTime.getTime() + 25 * 60000);
+
+        rot.occupancy_start = formatDate(startWindow);
+        rot.occupancy_end = formatDate(endWindow);
+        rot.assigned_stand = null;
+
+        const isIntl = toBool(rot.arr_flight.international);
+        const aircraftSize = rot.aircraft_size; // C or E
+
+        // Compatible check
+        function isCompatible(stand) {
+          // Size check
+          if (aircraftSize === 'E' && stand.max_size_code !== 'E') return false;
+          // Pier check
+          if (isIntl) {
+            return stand.pier === 'INTL' || toBool(stand.swing_gate) || stand.pier === 'REMOTE';
+          } else {
+            return stand.pier !== 'INTL' || toBool(stand.swing_gate) || stand.pier === 'REMOTE';
+          }
+        }
+
+        function isFree(standId) {
+          const occs = standOccupancy[standId] || [];
+          for (let o of occs) {
+            if (startWindow < o.end && endWindow > o.start) {
+              return false;
+            }
+          }
+          return true;
+        }
+
+        // STEP 1: Preferred Airline gate
+        const prefStands = stands.filter(s => s.preferred_airline === rot.airline_code && isCompatible(s));
+        for (let s of prefStands) {
+          if (isFree(s.stand_id)) {
+            rot.assigned_stand = s.stand_id;
+            standOccupancy[s.stand_id].push({ start: startWindow, end: endWindow, rotId: rot.rotation_id });
+            break;
+          }
+        }
+
+        // STEP 2: Nearest compatible contact gate
+        if (!rot.assigned_stand) {
+          const contactStands = stands
+            .filter(s => s.stand_type === 'CONTACT' && isCompatible(s))
+            .sort((a, b) => Number(a.walking_distance_m) - Number(b.walking_distance_m));
+
+          for (let s of contactStands) {
+            if (isFree(s.stand_id)) {
+              rot.assigned_stand = s.stand_id;
+              standOccupancy[s.stand_id].push({ start: startWindow, end: endWindow, rotId: rot.rotation_id });
+              break;
+            }
+          }
+        }
+
+        // STEP 3: Remote stand
+        if (!rot.assigned_stand) {
+          const remoteStands = stands.filter(s => s.stand_type === 'REMOTE' && isCompatible(s));
+          for (let s of remoteStands) {
+            if (isFree(s.stand_id)) {
+              rot.assigned_stand = s.stand_id;
+              standOccupancy[s.stand_id].push({ start: startWindow, end: endWindow, rotId: rot.rotation_id });
+              break;
+            }
+          }
+        }
+
+        // Update flights
+        rot.arr_flight.assigned_stand = rot.assigned_stand;
+        rot.dep_flight.assigned_stand = rot.assigned_stand;
+      });
+
+      return { rotations: sortedRotations, standOccupancy };
+    }
+
+    // ==========================================
+    // INITIALIZATION & STATE MANAGEMENT
+    // ==========================================
+
+    function initSimulation() {
+      // Deep clone raw data
+      const flights = JSON.parse(JSON.stringify(RAW_DATA.flights));
+      const stands = JSON.parse(JSON.stringify(RAW_DATA.stands));
+      const aircraftTypes = RAW_DATA.aircraft_types;
+
+      const sizeMap = {};
+      aircraftTypes.forEach(a => sizeMap[a.aircraft_type] = a.size_code);
+
+      flights.forEach(f => {
+        f.aircraft_size = sizeMap[f.aircraft_type] || 'C';
+        f.international = toBool(f.international);
+        f.is_delayed_over_30 = toBool(f.is_delayed_over_30 || false);
+      });
+
+      // Build rotations
+      const depMap = {};
+      flights.forEach(f => {
+        if (f.direction === 'DEP') depMap[f.rotation_id] = f;
+      });
+
+      const rotations = [];
+      flights.forEach(f => {
+        if (f.direction === 'ARR') {
+          const dep = depMap[f.rotation_id];
+          if (dep) {
+            rotations.push({
+              rotation_id: f.rotation_id,
+              airline_code: f.airline_code,
+              aircraft_type: f.aircraft_type,
+              aircraft_size: f.aircraft_size,
+              aircraft_reg: f.aircraft_reg,
+              arr_flight: f,
+              dep_flight: dep,
+              assigned_stand: null
+            });
+          }
+        }
+      });
+
+      appState.flights = flights;
+      appState.stands = stands;
+      appState.rotations = rotations;
+      appState.simAppliedIndex = 0;
+      appState.disruptionEvents = [];
+
+      recalculateAll();
+      populateDropdowns();
+      renderAllViews();
+    }
+
+    function recalculateAll() {
+      // 1. Runway Allocation
+      const { allocatedBins, allBins } = calculateRunwaySlots(appState.flights);
+      appState.runwayBins = allocatedBins;
+      appState.allRunwayBins = allBins;
+
+      // 2. Gate Allocation
+      const { rotations, standOccupancy } = calculateGateAllocations(appState.rotations, appState.stands);
+      appState.rotations = rotations;
+      appState.standOccupancy = standOccupancy;
+    }
+
+    function resetSimulation() {
+      initSimulation();
+      document.getElementById('sim-status-badge').innerHTML = `
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        Plan Baseline
+      `;
+      document.getElementById('sim-status-badge').className = "text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1";
+      document.getElementById('sim-event-log-container').innerHTML = `
+        <div class="text-xs text-gray-500 italic p-3 text-center">Simulation reset to planned baseline.</div>
+      `;
+    }
+
+    // ==========================================
+    // SIMULATION EVENT REPLAY ENGINE
+    // ==========================================
+
+    function stepNextSimulationEvent() {
+      const disruptionCommands = RAW_COMMANDS.filter(c => ['DELAY', 'CANCEL', 'SWAP', 'EARLY', 'DIVERSION_IN', 'DIVERT_OUT'].includes(c.action));
+      if (appState.simAppliedIndex >= disruptionCommands.length) {
+        alert("All operational disruption events from commands.txt have already been applied!");
+        return;
+      }
+
+      const cmd = disruptionCommands[appState.simAppliedIndex];
+      applyCommandToState(cmd);
+      appState.simAppliedIndex++;
+      updateSimStatusBadge();
+      recalculateAll();
+      renderAllViews();
+    }
+
+    function runAllSimulationEvents() {
+      const disruptionCommands = RAW_COMMANDS.filter(c => ['DELAY', 'CANCEL', 'SWAP', 'EARLY', 'DIVERSION_IN', 'DIVERT_OUT'].includes(c.action));
+      while (appState.simAppliedIndex < disruptionCommands.length) {
+        const cmd = disruptionCommands[appState.simAppliedIndex];
+        applyCommandToState(cmd);
+        appState.simAppliedIndex++;
+      }
+      updateSimStatusBadge();
+      recalculateAll();
+      renderAllViews();
+    }
+
+    function applyCommandToState(cmd) {
+      let logHtml = "";
+      const action = cmd.action;
+      const args = cmd.args;
+
+      if (action === 'DELAY') {
+        const flightId = args[0];
+        const newTime = args[1];
+        const reason = args[2] || 'AIRLINE';
+        const f = appState.flights.find(x => x.flight_id === flightId);
+        if (f) {
+          const oldTime = f.scheduled_ts;
+          f.scheduled_ts = newTime;
+          f.is_delayed = true;
+          f.delay_reason = reason;
+          f.is_delayed_over_30 = true;
+          logHtml = `<div class="p-2.5 bg-amber-500/10 border-l-2 border-amber-500 rounded text-xs">
+            <span class="font-bold text-amber-400">DELAY</span>: Flight <span class="font-mono text-white">${flightId}</span> pushed from ${formatTimeOnly(oldTime)} &rarr; <span class="text-amber-300 font-bold">${formatTimeOnly(newTime)}</span> (${reason})
+          </div>`;
+        }
+      } else if (action === 'CANCEL') {
+        const flightId = args[0];
+        const f = appState.flights.find(x => x.flight_id === flightId);
+        if (f) {
+          f.is_cancelled = true;
+          logHtml = `<div class="p-2.5 bg-rose-500/10 border-l-2 border-rose-500 rounded text-xs">
+            <span class="font-bold text-rose-400">CANCEL</span>: Flight <span class="font-mono text-white">${flightId}</span> (${f.airline_code} ${f.flight_no}) has been cancelled.
+          </div>`;
+        }
+      } else if (action === 'SWAP') {
+        const rotId = args[0];
+        const newReg = args[1];
+        const newType = args[2];
+        const rot = appState.rotations.find(x => x.rotation_id === rotId);
+        if (rot) {
+          rot.aircraft_reg = newReg;
+          rot.aircraft_type = newType;
+          rot.aircraft_size = (newType === 'B787' || newType === 'A350') ? 'E' : 'C';
+          rot.arr_flight.aircraft_reg = newReg;
+          rot.arr_flight.aircraft_type = newType;
+          rot.dep_flight.aircraft_reg = newReg;
+          rot.dep_flight.aircraft_type = newType;
+          logHtml = `<div class="p-2.5 bg-indigo-500/10 border-l-2 border-indigo-500 rounded text-xs">
+            <span class="font-bold text-indigo-400">AIRCRAFT SWAP</span>: Rotation <span class="font-mono text-white">${rotId}</span> reg & gauge changed to <span class="text-indigo-300 font-bold">${newReg} (${newType})</span>
+          </div>`;
+        }
+      } else if (action === 'EARLY') {
+        const flightId = args[0];
+        const newTime = args[1];
+        const f = appState.flights.find(x => x.flight_id === flightId);
+        if (f) {
+          const oldTime = f.scheduled_ts;
+          f.scheduled_ts = newTime;
+          logHtml = `<div class="p-2.5 bg-sky-500/10 border-l-2 border-sky-500 rounded text-xs">
+            <span class="font-bold text-sky-400">EARLY ARRIVAL</span>: Flight <span class="font-mono text-white">${flightId}</span> advanced from ${formatTimeOnly(oldTime)} &rarr; <span class="text-sky-300 font-bold">${formatTimeOnly(newTime)}</span>
+          </div>`;
+        }
+      } else if (action === 'DIVERSION_IN') {
+        const dviId = args[0];
+        const airline = args[1];
+        const acType = args[2];
+        const reg = args[3];
+        const time = args[4];
+        const isIntl = toBool(args[5]);
+
+        const newArr = {
+          flight_id: dviId,
+          rotation_id: "ROT-" + dviId,
+          airline_code: airline,
+          flight_no: airline + " DIV",
+          direction: "ARR",
+          scheduled_ts: time,
+          origin_or_destination: "DIV",
+          international: isIntl,
+          aircraft_reg: reg,
+          aircraft_type: acType,
+          aircraft_size: (acType === 'B787' || acType === 'A350') ? 'E' : 'C',
+          is_diverted: true
+        };
+
+        const depTime = new Date(parseDate(time).getTime() + 120 * 60000);
+        const newDep = {
+          flight_id: dviId + "-DEP",
+          rotation_id: "ROT-" + dviId,
+          airline_code: airline,
+          flight_no: airline + " DIV-D",
+          direction: "DEP",
+          scheduled_ts: formatDate(depTime),
+          origin_or_destination: "DEST",
+          international: isIntl,
+          aircraft_reg: reg,
+          aircraft_type: acType,
+          aircraft_size: newArr.aircraft_size
+        };
+
+        appState.flights.push(newArr, newDep);
+        appState.rotations.push({
+          rotation_id: newArr.rotation_id,
+          airline_code: airline,
+          aircraft_type: acType,
+          aircraft_size: newArr.aircraft_size,
+          aircraft_reg: reg,
+          arr_flight: newArr,
+          dep_flight: newDep,
+          assigned_stand: null
+        });
+
+        logHtml = `<div class="p-2.5 bg-purple-500/10 border-l-2 border-purple-500 rounded text-xs">
+          <span class="font-bold text-purple-400">DIVERSION IN</span>: Unscheduled landing <span class="font-mono text-white">${dviId}</span> (${airline}, ${acType}, ${reg}) at ${formatTimeOnly(time)}
+        </div>`;
+      }
+
+      if (logHtml) {
+        const logContainer = document.getElementById('sim-event-log-container');
+        if (logContainer.innerText.includes('No simulation events applied') || logContainer.innerText.includes('Simulation reset')) {
+          logContainer.innerHTML = '';
+        }
+        logContainer.insertAdjacentHTML('afterbegin', logHtml);
+      }
+    }
+
+    function injectCustomEvent() {
+      const flightId = document.getElementById('custom-event-flight').value;
+      const action = document.getElementById('custom-event-action').value;
+      const minutes = Number(document.getElementById('custom-event-minutes').value) || 30;
+      const reason = document.getElementById('custom-event-reason').value;
+
+      const f = appState.flights.find(x => x.flight_id === flightId);
+      if (!f) return;
+
+      const currDate = parseDate(f.scheduled_ts);
+      let newDate = currDate;
+      if (action === 'DELAY') {
+        newDate = new Date(currDate.getTime() + minutes * 60000);
+      } else if (action === 'EARLY') {
+        newDate = new Date(currDate.getTime() - minutes * 60000);
+      }
+
+      applyCommandToState({
+        action: action,
+        args: [flightId, formatDate(newDate), reason]
+      });
+
+      recalculateAll();
+      renderAllViews();
+      updateSimStatusBadge();
+    }
+
+    function updateSimStatusBadge() {
+      const disruptionCommands = RAW_COMMANDS.filter(c => ['DELAY', 'CANCEL', 'SWAP', 'EARLY', 'DIVERSION_IN', 'DIVERT_OUT'].includes(c.action));
+      const progressPct = Math.round((appState.simAppliedIndex / disruptionCommands.length) * 100);
+      document.getElementById('sim-progress-bar').style.width = progressPct + '%';
+      document.getElementById('sim-progress-text').innerText = `${appState.simAppliedIndex} / ${disruptionCommands.length} Events Applied (${progressPct}%)`;
+
+      if (appState.simAppliedIndex > 0) {
+        document.getElementById('sim-status-badge').innerHTML = `
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+          Disruptions Active (${appState.simAppliedIndex})
+        `;
+        document.getElementById('sim-status-badge').className = "text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1";
+      }
+    }
+
+    // ==========================================
+    // RENDER FUNCTIONS FOR EACH TAB
+    // ==========================================
+
+    function renderAllViews() {
+      renderOverviewTab();
+      renderRunwayTab();
+      renderGatesGantt();
+      renderTurnaroundView();
+      renderFlightsTable();
+      renderBillingView();
+    }
+
+    function renderOverviewTab() {
+      const activeFlights = appState.flights.filter(f => !f.is_cancelled);
+      const arrCount = activeFlights.filter(f => f.direction === 'ARR').length;
+      const depCount = activeFlights.filter(f => f.direction === 'DEP').length;
+
+      document.getElementById('ov-flights-count').innerText = activeFlights.length;
+      document.getElementById('ov-flights-count').nextElementSibling.innerHTML = `
+        <span class="text-emerald-400 font-medium">${arrCount} ARR</span> • <span class="text-sky-400 font-medium">${depCount} DEP</span> • ${appState.rotations.length} Rotations
+      `;
+      document.getElementById('stat-header-flights').innerText = activeFlights.length;
+      document.getElementById('stat-header-rotations').innerText = appState.rotations.length;
+
+      // Calculate peak runway slot
+      let peakCount = 0;
+      let pushedCount = 0;
+      Object.keys(appState.runwayBins).forEach(bin => {
+        const count = appState.runwayBins[bin].length;
+        if (count > peakCount) peakCount = count;
+        appState.runwayBins[bin].forEach(f => {
+          if (f.is_pushed) pushedCount++;
+        });
+      });
+
+      document.getElementById('stat-header-peak-runway').innerText = `${peakCount} / 12`;
+      document.getElementById('ov-pushed-slots').innerText = `${pushedCount} Pushed`;
+
+      // Render Hourly Traffic Bar Chart
+      const hourlyChart = document.getElementById('hourly-traffic-chart');
+      hourlyChart.innerHTML = '';
+      
+      const hours = Array.from({length: 24}, (_, i) => ({ arr: 0, dep: 0, total: 0 }));
+      activeFlights.forEach(f => {
+        const h = parseDate(f.scheduled_ts).getHours();
+        if (f.direction === 'ARR') hours[h].arr++;
+        else hours[h].dep++;
+        hours[h].total++;
+      });
+
+      const maxH = Math.max(...hours.map(h => h.total), 1);
+
+      hours.forEach((hData, hIndex) => {
+        const heightPct = Math.round((hData.total / maxH) * 100);
+        const arrPct = hData.total > 0 ? (hData.arr / hData.total) * 100 : 0;
+        const depPct = 100 - arrPct;
+
+        const bar = document.createElement('div');
+        bar.className = 'flex-1 h-full flex flex-col justify-end group relative cursor-pointer';
+        bar.innerHTML = `
+          <div class="w-full flex flex-col justify-end rounded-t overflow-hidden transition-all group-hover:brightness-125" style="height: ${heightPct}%">
+            <div class="w-full bg-sky-500" style="height: ${depPct}%"></div>
+            <div class="w-full bg-emerald-500" style="height: ${arrPct}%"></div>
+          </div>
+          <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-gray-900 border border-gray-700 text-white text-[10px] px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-30">
+            ${String(hIndex).padStart(2, '0')}:00 - ${hData.total} flights (${hData.arr} ARR, ${hData.dep} DEP)
+          </div>
+        `;
+        hourlyChart.appendChild(bar);
+      });
+    }
+
+    function renderRunwayTab() {
+      const grid = document.getElementById('runway-bins-grid');
+      grid.innerHTML = '';
+
+      appState.allRunwayBins.forEach(binKey => {
+        const flightsInBin = appState.runwayBins[binKey] || [];
+        const count = flightsInBin.length;
+        const timeLabel = formatTimeOnly(binKey);
+
+        let colorBg = 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400';
+        let barColor = 'bg-emerald-500';
+        if (count >= 12) {
+          colorBg = 'bg-rose-500/20 border-rose-500/60 text-rose-300 font-bold';
+          barColor = 'bg-rose-500';
+        } else if (count >= 10) {
+          colorBg = 'bg-amber-500/20 border-amber-500/40 text-amber-300';
+          barColor = 'bg-amber-500';
+        } else if (count >= 7) {
+          colorBg = 'bg-sky-500/10 border-sky-500/30 text-sky-300';
+          barColor = 'bg-sky-500';
+        }
+
+        const tile = document.createElement('div');
+        tile.className = `p-2.5 rounded-xl border ${colorBg} flex flex-col justify-between cursor-pointer hover:scale-105 transition-transform shadow-sm`;
+        tile.onclick = () => showRunwayBinDetail(binKey);
+
+        tile.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs text-gray-300">${timeLabel}</span>
+            <span class="text-xs">${count}/12</span>
+          </div>
+          <div class="w-full h-1.5 bg-gray-800 rounded-full mt-2 overflow-hidden">
+            <div class="${barColor} h-full rounded-full" style="width: ${(count/12)*100}%"></div>
+          </div>
+        `;
+
+        grid.appendChild(tile);
+      });
+    }
+
+    function showRunwayBinDetail(binKey) {
+      const flightsInBin = appState.runwayBins[binKey] || [];
+      const drawer = document.getElementById('runway-bin-detail');
+      drawer.classList.remove('hidden');
+
+      const dt = parseDate(binKey);
+      const endDt = new Date(dt.getTime() + 15 * 60000);
+      document.getElementById('detail-bin-time').innerText = `${formatTimeOnly(binKey)} - ${formatTimeOnly(formatDate(endDt))}`;
+      document.getElementById('detail-bin-count').innerText = flightsInBin.length;
+
+      const tbody = document.getElementById('detail-bin-table-body');
+      tbody.innerHTML = '';
+
+      if (flightsInBin.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-gray-500 italic">No flights scheduled in this 15-minute slot.</td></tr>`;
+        return;
+      }
+
+      flightsInBin.forEach(f => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-800/40 transition-colors';
+        const priorityLabel = f._priority === 0 ? '<span class="text-rose-400 font-bold">P0 (Delayed DEP)</span>' : (f._priority === 1 ? '<span class="text-sky-400">P1 (Normal DEP)</span>' : '<span class="text-gray-400">P2 (Arrival)</span>');
+        const statusBadge = f.is_pushed ? '<span class="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30">Pushed Slot</span>' : '<span class="text-[10px] text-emerald-400">On Time</span>';
+
+        tr.innerHTML = `
+          <td class="p-2.5 font-mono text-white">${f.flight_id}</td>
+          <td class="p-2.5 font-bold">${f.airline_code} ${f.flight_no}</td>
+          <td class="p-2.5">${f.airline_code}</td>
+          <td class="p-2.5 font-semibold ${f.direction === 'ARR' ? 'text-emerald-400' : 'text-sky-400'}">${f.direction}</td>
+          <td class="p-2.5 font-mono text-gray-400">${formatTimeOnly(f.scheduled_ts)}</td>
+          <td class="p-2.5 font-mono text-white">${formatTimeOnly(f.allocated_bin)}</td>
+          <td class="p-2.5">${priorityLabel}</td>
+          <td class="p-2.5">${statusBadge}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function renderGatesGantt() {
+      const container = document.getElementById('gantt-stands-container');
+      container.innerHTML = '';
+
+      const pierFilter = document.getElementById('filter-gate-pier').value;
+      const sizeFilter = document.getElementById('filter-gate-size').value;
+
+      const filteredStands = appState.stands.filter(s => {
+        if (pierFilter !== 'ALL' && s.pier !== pierFilter) return false;
+        if (sizeFilter !== 'ALL' && s.max_size_code !== sizeFilter) return false;
+        return true;
+      });
+
+      filteredStands.forEach(stand => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center hover:bg-gray-800/30 py-1 rounded transition-colors';
+
+        // Left Label
+        const typeBadge = stand.stand_type === 'CONTACT' ? '<span class="text-[9px] text-sky-400">Aerobridge</span>' : '<span class="text-[9px] text-gray-400">Remote</span>';
+        const prefLabel = stand.preferred_airline ? `<span class="text-[9px] font-bold text-emerald-400">${stand.preferred_airline}</span>` : '';
+
+        row.innerHTML = `
+          <div class="w-36 flex flex-col justify-center pr-2 pl-2 border-r border-[#1f293d]">
+            <div class="flex items-center justify-between">
+              <span class="font-mono font-bold text-xs text-white">${stand.stand_id}</span>
+              <span class="text-[10px] bg-slate-800 text-gray-300 px-1 rounded">${stand.max_size_code}</span>
+            </div>
+            <div class="flex items-center gap-1.5 mt-0.5">
+              ${typeBadge}
+              <span class="text-[9px] text-gray-500 font-mono">${stand.walking_distance_m}m</span>
+              ${prefLabel}
+            </div>
+          </div>
+          <div class="flex-1 h-8 bg-slate-900/60 rounded relative overflow-hidden mx-1 border border-slate-800/80">
+            <!-- Flight bars go here -->
+          </div>
+        `;
+
+        const timelineContainer = row.querySelector('.flex-1');
+
+        // Find rotations assigned to this stand
+        const rots = appState.rotations.filter(r => r.assigned_stand === stand.stand_id && !r.arr_flight.is_cancelled);
+
+        rots.forEach(rot => {
+          const start = parseDate(rot.occupancy_start);
+          const end = parseDate(rot.occupancy_end);
+
+          // Minutes from midnight
+          const startMin = start.getHours() * 60 + start.getMinutes();
+          const endMin = end.getHours() * 60 + end.getMinutes();
+
+          const leftPct = Math.max(0, Math.min(100, (startMin / 1440) * 100));
+          const widthPct = Math.max(1.5, Math.min(100 - leftPct, ((endMin - startMin) / 1440) * 100));
+
+          let bgClass = "bg-sky-600/80 border-sky-400 text-sky-100";
+          if (rot.airline_code === 'KV') bgClass = "bg-emerald-600/80 border-emerald-400 text-emerald-100";
+          else if (rot.airline_code === 'SB') bgClass = "bg-purple-600/80 border-purple-400 text-purple-100";
+          else if (rot.airline_code === 'NX') bgClass = "bg-amber-600/80 border-amber-400 text-amber-100";
+
+          const bar = document.createElement('div');
+          bar.className = `absolute top-1 bottom-1 rounded border text-[10px] font-mono flex items-center justify-center px-1 truncate cursor-pointer timeline-bar ${bgClass}`;
+          bar.style.left = `${leftPct}%`;
+          bar.style.width = `${widthPct}%`;
+          bar.title = `${rot.rotation_id} | ${rot.airline_code} | ARR: ${formatTimeOnly(rot.arr_flight.scheduled_ts)} - DEP: ${formatTimeOnly(rot.dep_flight.scheduled_ts)}`;
+          bar.innerText = `${rot.arr_flight.flight_no} / ${rot.dep_flight.flight_no}`;
+          bar.onclick = () => openFlightModal(rot);
+
+          timelineContainer.appendChild(bar);
+        });
+
+        container.appendChild(row);
+      });
+    }
+
+    function renderTurnaroundView() {
+      const select = document.getElementById('select-turnaround-rotation');
+      if (select.children.length === 0) {
+        appState.rotations.forEach(rot => {
+          const opt = document.createElement('option');
+          opt.value = rot.rotation_id;
+          opt.innerText = `${rot.rotation_id} (${rot.airline_code} ${rot.arr_flight.flight_no} -> ${rot.dep_flight.flight_no})`;
+          select.appendChild(opt);
+        });
+      }
+
+      const selectedId = select.value || (appState.rotations[0] ? appState.rotations[0].rotation_id : null);
+      if (!selectedId) return;
+
+      const rot = appState.rotations.find(r => r.rotation_id === selectedId);
+      if (!rot) return;
+
+      const isIntl = toBool(rot.arr_flight.international);
+      const arrTime = parseDate(rot.arr_flight.scheduled_ts);
+      const depTime = parseDate(rot.dep_flight.scheduled_ts);
+      const totalTurnaroundMins = Math.round((depTime - arrTime) / 60000);
+
+      // Populate summary card
+      document.getElementById('turnaround-summary-card').innerHTML = `
+        <div>
+          <span class="text-gray-400 block mb-0.5">Rotation ID:</span>
+          <span class="text-white font-mono font-bold">${rot.rotation_id}</span>
+        </div>
+        <div>
+          <span class="text-gray-400 block mb-0.5">Carrier:</span>
+          <span class="text-white font-bold">${rot.airline_code} (${rot.aircraft_type})</span>
+        </div>
+        <div>
+          <span class="text-gray-400 block mb-0.5">Registration:</span>
+          <span class="text-sky-400 font-mono font-bold">${rot.aircraft_reg}</span>
+        </div>
+        <div>
+          <span class="text-gray-400 block mb-0.5">Assigned Stand:</span>
+          <span class="text-emerald-400 font-bold">${rot.assigned_stand || 'Standby'}</span>
+        </div>
+        <div>
+          <span class="text-gray-400 block mb-0.5">Ground Schedule:</span>
+          <span class="text-gray-200 font-mono">${formatTimeOnly(rot.arr_flight.scheduled_ts)} &rarr; ${formatTimeOnly(rot.dep_flight.scheduled_ts)}</span>
+        </div>
+        <div>
+          <span class="text-gray-400 block mb-0.5">Flight Type:</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isIntl ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-slate-800 text-gray-300'}">
+            ${isIntl ? 'INTERNATIONAL' : 'DOMESTIC'}
+          </span>
+        </div>
+      `;
+
+      document.getElementById('turnaround-duration-badge').innerText = `Turnaround Time: ${totalTurnaroundMins} mins`;
+
+      // Build task schedule
+      // Deboarding: 15m
+      // Cleaning: 20m, Fuelling: 25m, Catering: 20m
+      // Security: 15m (if international)
+      // Boarding: 25m
+      const tasks = [
+        { name: 'DEBOARDING', duration: 15, team: 'TEAM-01 (PAX_HANDLING)', startOffset: 0, endOffset: 15, color: 'border-sky-500 bg-sky-500/20 text-sky-300' },
+        { name: 'CLEANING', duration: 20, team: 'TEAM-04 (CLEANING)', startOffset: 15, endOffset: 35, color: 'border-emerald-500 bg-emerald-500/20 text-emerald-300' },
+        { name: 'FUELLING', duration: 25, team: 'TEAM-06 (FUELLING)', startOffset: 15, endOffset: 40, color: 'border-amber-500 bg-amber-500/20 text-amber-300' },
+        { name: 'CATERING', duration: 20, team: 'TEAM-08 (CATERING)', startOffset: 15, endOffset: 35, color: 'border-indigo-500 bg-indigo-500/20 text-indigo-300' }
+      ];
+
+      if (isIntl) {
+        tasks.push({ name: 'SECURITY_CHECK', duration: 15, team: 'TEAM-10 (SECURITY)', startOffset: 35, endOffset: 50, color: 'border-purple-500 bg-purple-500/20 text-purple-300' });
+        tasks.push({ name: 'BOARDING', duration: 25, team: 'TEAM-02 (PAX_HANDLING)', startOffset: 50, endOffset: 75, color: 'border-rose-500 bg-rose-500/20 text-rose-300' });
+      } else {
+        tasks.push({ name: 'BOARDING', duration: 25, team: 'TEAM-02 (PAX_HANDLING)', startOffset: 40, endOffset: 65, color: 'border-rose-500 bg-rose-500/20 text-rose-300' });
+      }
+
+      const tasksContainer = document.getElementById('turnaround-tasks-container');
+      tasksContainer.innerHTML = '';
+
+      const maxOffset = tasks[tasks.length - 1].endOffset;
+
+      tasks.forEach(t => {
+        const startDt = new Date(arrTime.getTime() + t.startOffset * 60000);
+        const endDt = new Date(arrTime.getTime() + t.endOffset * 60000);
+
+        const leftPct = (t.startOffset / maxOffset) * 100;
+        const widthPct = (t.duration / maxOffset) * 100;
+
+        const row = document.createElement('div');
+        row.className = 'space-y-1';
+        row.innerHTML = `
+          <div class="flex justify-between text-xs">
+            <span class="font-semibold text-gray-200">${t.name} (${t.duration}m)</span>
+            <span class="text-gray-400 font-mono">${formatTimeOnly(formatDate(startDt))} &rarr; ${formatTimeOnly(formatDate(endDt))} • <span class="text-gray-300">${t.team}</span></span>
+          </div>
+          <div class="w-full h-5 bg-slate-900 rounded overflow-hidden relative border border-slate-800">
+            <div class="absolute top-0 bottom-0 rounded border ${t.color} flex items-center justify-center text-[10px] font-bold" style="left: ${leftPct}%; width: ${widthPct}%;">
+              ${t.duration} min
+            </div>
+          </div>
+        `;
+        tasksContainer.appendChild(row);
+      });
+
+      // Render Service Teams Grid
+      const teamsGrid = document.getElementById('service-teams-grid');
+      teamsGrid.innerHTML = '';
+      RAW_DATA.service_teams.forEach(team => {
+        const tile = document.createElement('div');
+        tile.className = 'p-3 bg-slate-900/80 border border-slate-800 rounded-lg flex flex-col justify-between';
+        tile.innerHTML = `
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-mono font-bold text-white">${team.team_id}</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="text-[11px] text-gray-400">${team.task_type}</div>
+          <div class="text-[10px] text-sky-400 mt-2 font-medium">Size: ${team.team_size} members</div>
+        `;
+        teamsGrid.appendChild(tile);
+      });
+    }
+
+    function renderFlightsTable() {
+      const search = (document.getElementById('flights-search').value || '').toLowerCase();
+      const dirFilter = document.getElementById('filter-flight-dir').value;
+      const airlineFilter = document.getElementById('filter-flight-airline').value;
+      const typeFilter = document.getElementById('filter-flight-type').value;
+
+      const tbody = document.getElementById('flights-table-body');
+      tbody.innerHTML = '';
+
+      const filtered = appState.flights.filter(f => {
+        if (dirFilter !== 'ALL' && f.direction !== dirFilter) return false;
+        if (airlineFilter !== 'ALL' && f.airline_code !== airlineFilter) return false;
+        if (typeFilter === 'DOM' && f.international) return false;
+        if (typeFilter === 'INTL' && !f.international) return false;
+
+        if (search) {
+          const matchStr = `${f.flight_id} ${f.flight_no} ${f.rotation_id} ${f.aircraft_reg} ${f.origin_or_destination} ${f.aircraft_type}`.toLowerCase();
+          if (!matchStr.includes(search)) return false;
+        }
+        return true;
+      });
+
+      filtered.forEach(f => {
+        const tr = document.createElement('tr');
+        tr.className = `hover:bg-gray-800/40 transition-colors airline-${f.airline_code}`;
+        const dirBadge = f.direction === 'ARR' ? '<span class="text-emerald-400 font-bold">ARR</span>' : '<span class="text-sky-400 font-bold">DEP</span>';
+        const typeBadge = f.international ? '<span class="px-1.5 py-0.5 bg-purple-500/20 text-purple-300 rounded text-[10px]">INTL</span>' : '<span class="text-gray-400">DOM</span>';
+
+        tr.innerHTML = `
+          <td class="p-3 font-mono font-bold text-white">${f.flight_id}</td>
+          <td class="p-3 font-bold text-gray-200">${f.flight_no}</td>
+          <td class="p-3 font-mono text-gray-400">${f.rotation_id}</td>
+          <td class="p-3 font-semibold">${f.airline_code}</td>
+          <td class="p-3">${dirBadge}</td>
+          <td class="p-3 font-mono text-white">${formatTimeOnly(f.scheduled_ts)}</td>
+          <td class="p-3 font-mono text-sky-400">${formatTimeOnly(f.allocated_bin)}</td>
+          <td class="p-3 font-mono font-bold text-emerald-400">${f.assigned_stand || 'Standby'}</td>
+          <td class="p-3">${f.aircraft_type} (${f.aircraft_size})</td>
+          <td class="p-3 font-mono text-gray-300">${f.aircraft_reg}</td>
+          <td class="p-3 font-mono">${f.origin_or_destination}</td>
+          <td class="p-3">${typeBadge}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('flights-table-count').innerText = `Showing ${filtered.length} of ${appState.flights.length} flights`;
+    }
+
+    function renderBillingView() {
+      const selectedAirline = document.getElementById('select-billing-airline').value;
+      const tbody = document.getElementById('billing-table-body');
+      tbody.innerHTML = '';
+
+      let totalInvoiced = 0;
+      let totalParking = 0;
+      let totalAerobridge = 0;
+      let totalPenalties = 0;
+
+      const filteredRotations = appState.rotations.filter(rot => {
+        if (selectedAirline !== 'ALL' && rot.airline_code !== selectedAirline) return false;
+        return true;
+      });
+
+      filteredRotations.forEach(rot => {
+        const arrTime = parseDate(rot.arr_flight.scheduled_ts);
+        const depTime = parseDate(rot.dep_flight.scheduled_ts);
+        const totalGroundMin = Math.max(0, Math.round((depTime - arrTime) / 60000));
+
+        const standObj = appState.stands.find(s => s.stand_id === rot.assigned_stand) || {};
+        const isRemote = standObj.stand_type === 'REMOTE';
+        const freeLimitMin = isRemote ? 240 : 120;
+
+        const billableMinutes = Math.max(0, totalGroundMin - freeLimitMin);
+        const billableBins = Math.ceil(billableMinutes / 15);
+
+        const ratePer15m = rot.aircraft_size === 'E' ? 900 : 400;
+        let baseParkingFee = billableBins * ratePer15m;
+
+        // Peak hour surcharge 25% if occupied between 06:00-09:00 or 18:00-21:00
+        const arrHour = arrTime.getHours();
+        const depHour = depTime.getHours();
+        const inPeak = (arrHour >= 6 && arrHour < 9) || (arrHour >= 18 && arrHour < 21) || (depHour >= 6 && depHour < 9) || (depHour >= 18 && depHour < 21);
+        const peakSurcharge = inPeak ? Math.round(baseParkingFee * 0.25) : 0;
+
+        // Aerobridge fee
+        const aerobridgeFee = (!isRemote && toBool(standObj.aerobridge)) ? 2500 : 0;
+
+        // Delay penalty (₹10,000 per 15 min if airline caused delay)
+        let delayPenalty = 0;
+        if (rot.arr_flight.is_delayed && rot.arr_flight.delay_reason === 'AIRLINE') {
+          delayPenalty += 10000;
+        }
+        if (rot.dep_flight.is_delayed && rot.dep_flight.delay_reason === 'AIRLINE') {
+          delayPenalty += 10000;
+        }
+
+        const rotationTotal = baseParkingFee + peakSurcharge + aerobridgeFee + delayPenalty;
+
+        totalInvoiced += rotationTotal;
+        totalParking += baseParkingFee;
+        totalAerobridge += (aerobridgeFee + peakSurcharge);
+        totalPenalties += delayPenalty;
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-800/40 transition-colors';
+        tr.innerHTML = `
+          <td class="p-3 text-white font-bold">${rot.rotation_id}</td>
+          <td class="p-3 font-semibold">${rot.airline_code}</td>
+          <td class="p-3 text-gray-300">${rot.aircraft_reg} (${rot.aircraft_size})</td>
+          <td class="p-3 text-emerald-400 font-bold">${rot.assigned_stand || 'R01'}</td>
+          <td class="p-3">${totalGroundMin}m</td>
+          <td class="p-3 text-gray-400">${freeLimitMin}m</td>
+          <td class="p-3 text-sky-400">${billableBins}</td>
+          <td class="p-3">₹${baseParkingFee.toLocaleString()}</td>
+          <td class="p-3">₹${aerobridgeFee.toLocaleString()}</td>
+          <td class="p-3 text-amber-400">₹${peakSurcharge.toLocaleString()}</td>
+          <td class="p-3 text-rose-400">₹${delayPenalty.toLocaleString()}</td>
+          <td class="p-3 text-right font-bold text-emerald-400">₹${rotationTotal.toLocaleString()}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('bill-kpi-total').innerText = '₹' + totalInvoiced.toLocaleString();
+      document.getElementById('bill-kpi-parking').innerText = '₹' + totalParking.toLocaleString();
+      document.getElementById('bill-kpi-aerobridge').innerText = '₹' + totalAerobridge.toLocaleString();
+      document.getElementById('bill-kpi-penalties').innerText = '₹' + totalPenalties.toLocaleString();
+      document.getElementById('ov-total-revenue').innerText = '₹' + (totalInvoiced / 100000).toFixed(2) + 'L';
+    }
+
+    function populateDropdowns() {
+      const flightSelect = document.getElementById('custom-event-flight');
+      flightSelect.innerHTML = '';
+      appState.flights.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f.flight_id;
+        opt.innerText = `${f.flight_id} - ${f.airline_code} ${f.flight_no} (${f.direction}) - ${formatTimeOnly(f.scheduled_ts)}`;
+        flightSelect.appendChild(opt);
+      });
+    }
+
+    function openFlightModal(rot) {
+      document.getElementById('modal-flight-title').innerText = `Rotation ${rot.rotation_id} (${rot.airline_code})`;
+      document.getElementById('modal-flight-content').innerHTML = `
+        <div class="grid grid-cols-2 gap-3 bg-slate-900 p-3 rounded-lg border border-slate-800">
+          <div><span class="text-gray-400">Aircraft Tail:</span> <strong class="text-white">${rot.aircraft_reg}</strong></div>
+          <div><span class="text-gray-400">Gauge / Size:</span> <strong class="text-white">${rot.aircraft_type} (Code ${rot.aircraft_size})</strong></div>
+          <div><span class="text-gray-400">Arrival Flight:</span> <strong class="text-emerald-400">${rot.arr_flight.flight_no} (${formatTimeOnly(rot.arr_flight.scheduled_ts)})</strong></div>
+          <div><span class="text-gray-400">Departure Flight:</span> <strong class="text-sky-400">${rot.dep_flight.flight_no} (${formatTimeOnly(rot.dep_flight.scheduled_ts)})</strong></div>
+          <div><span class="text-gray-400">Assigned Stand:</span> <strong class="text-indigo-400">${rot.assigned_stand || 'None'}</strong></div>
+          <div><span class="text-gray-400">Category:</span> <strong class="text-white">${rot.arr_flight.international ? 'International' : 'Domestic'}</strong></div>
+        </div>
+        <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800">
+          <span class="text-gray-400 block mb-1">Stand Reservation Window:</span>
+          <div class="font-mono text-white text-xs">${rot.occupancy_start} &rarr; ${rot.occupancy_end}</div>
+          <span class="text-[10px] text-gray-500 mt-1 block">Includes 5-min arrival buffer and 25-min departure buffer</span>
+        </div>
+      `;
+      document.getElementById('flight-modal').classList.remove('hidden');
+    }
+
+    function switchTab(tabId) {
+      const tabs = ['overview', 'runway', 'gates', 'turnaround', 'flights', 'simulator', 'charges'];
+      tabs.forEach(t => {
+        document.getElementById(`tab-view-${t}`).classList.add('hidden');
+        const btn = document.getElementById(`tab-btn-${t}`);
+        btn.className = "tab-btn px-3.5 py-1.5 rounded-md text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 flex items-center gap-2 transition-all";
+      });
+
+      document.getElementById(`tab-view-${tabId}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+      activeBtn.className = "tab-btn px-3.5 py-1.5 rounded-md text-white bg-sky-600/30 text-sky-300 border border-sky-500/30 font-semibold flex items-center gap-2 transition-all";
+      appState.activeTab = tabId;
+    }
+
+    // Auto-init on load
+    window.addEventListener('DOMContentLoaded', () => {
+      initSimulation();
+    });
+  </script>
+</body>
+</html>
