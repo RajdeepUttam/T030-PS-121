@@ -3,10 +3,10 @@ from parser import load_csv
 from runway import RunwayManager
 from gate_manager import GateManager
 from task_scheduler import TaskScheduler
+from outputs import write_gate_plan, write_task_schedule
 
 
 def to_bool(value):
-    """Convert CSV boolean values into Python booleans."""
     if isinstance(value, bool):
         return value
     return str(value).strip().lower() in ("true", "1", "yes")
@@ -27,7 +27,7 @@ def main():
     
     for f in flights:
         f["international"] = to_bool(f["international"])
-        f["aircraft_size"] = size_map.get(f["aircraft_type"].strip(), "C")
+        f["aircraft_type"] = size_map.get(f["aircraft_type"].strip(), "C")
         f["rotation_id"] = f["rotation_id"].strip()
         
         if f["direction"].strip() == "ARR":
@@ -36,9 +36,7 @@ def main():
             departures.append(f)
             
     # 3. Link Arrivals and Departures into Rotations for the Gate Manager
-    rotation_map = {}
-    for d in departures:
-        rotation_map[d["rotation_id"]] = d
+    rotation_map = {d["rotation_id"]: d for d in departures}
         
     gate_flights = []
     for a in arrivals:
@@ -49,22 +47,23 @@ def main():
                 "rotation_id": a["rotation_id"],
                 "airline_code": a["airline_code"].strip(),
                 "international": a["international"],
-                "aircraft_type": a["aircraft_size"],
+                "aircraft_type": a["aircraft_type"],
                 "scheduled_ts": a["scheduled_ts"],
                 "departure_ts": dep["scheduled_ts"]
             }
             gate_flights.append(combined)
 
-    # 4. Runway Allocation (Processes ALL 120 movements)
+    # 4. Runway Allocation
     print("Allocating Runway Slots...")
     runway_mgr = RunwayManager()
-    
     for f in flights:
         f["is_delayed_over_30"] = to_bool(f.get("is_delayed_over_30", False))
-        
     runway_results = runway_mgr.allocate_batch(flights)
+    
+    # Map runway bins
+    allocated_bin_map = {f["flight_id"]: f["allocated_bin"] for f in runway_results}
 
-    # 5. Gate Allocation (Processes the 60 linked rotations)
+    # 5. Gate Allocation
     print("Allocating Gates...")
     adjacency_list = []
     with open("data/gate_adjacency.csv", "r") as f:
@@ -75,7 +74,7 @@ def main():
     gate_mgr = GateManager(adjacency_list)
     gate_results = gate_mgr.assign_gates(gate_flights, stands)
 
-    # 6. Task Scheduler (BR-06)
+    # 6. Task Scheduler
     print("Running Task Scheduler...")
     teams = load_csv("data/service_teams.csv")
     task_durations = load_csv("data/task_durations.csv")
@@ -84,15 +83,39 @@ def main():
     scheduled_tasks = scheduler.schedule_tasks(gate_flights)
     print(f"Task scheduling completed. Generated {len(scheduled_tasks)} tasks.")
 
-    # 7. Print the first 5 results to verify
+    # 7. Combine Runway and Gate Results for Output
+    # Since gate_results updates gate_flights with assigned_stand and mode, we use that.
+    gate_data_map = {f["rotation_id"]: f for f in gate_results}
+    
+    final_flights = []
+    for f in flights:
+        result = f.copy()
+        # Add runway bin
+        result["allocated_bin"] = allocated_bin_map.get(f["flight_id"])
+        
+        # Add gate data (if it exists for this rotation)
+        g_info = gate_data_map.get(f["rotation_id"], {})
+        result["assigned_stand"] = g_info.get("assigned_stand", "")
+        result["occupancy_start"] = g_info.get("occupancy_start", "")
+        result["occupancy_end"] = g_info.get("occupancy_end", "")
+        result["buffer_end"] = g_info.get("buffer_end", "")
+        result["mode"] = g_info.get("mode", "")
+        result["reason"] = g_info.get("reason", "")
+        
+        final_flights.append(result)
+
+    # Print verify
     print("\nFIRST 5 FLIGHT ALLOCATIONS")
     print("-" * 75)
-    for i in range(5):
-        if i < len(runway_results) and i < len(gate_results):
-            r = runway_results[i]
-            g = gate_results[i]
-            print(f"Flight ID: {r['flight_id']} | Direction: {r['direction']} | Allocated Bin: {r.get('allocated_bin')} | Assigned Stand: {g.get('assigned_stand')}")
+    for f in final_flights[:5]:
+        print(f"Flight ID: {f['flight_id']} | Direction: {f['direction']} | Allocated Bin: {f['allocated_bin']} | Assigned Stand: {f['assigned_stand']}")
     print("-" * 75)
+
+    # 8. Generate Outputs
+    print("\nGenerating Output CSVs...")
+    write_gate_plan("gate_plan.csv", final_flights)
+    write_task_schedule("task_schedule.csv", scheduled_tasks)
+    print("CSV files generated successfully! Check your folder.")
 
 if __name__ == "__main__":
     main()
