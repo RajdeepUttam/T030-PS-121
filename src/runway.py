@@ -224,3 +224,20 @@ if __name__ == "__main__":
     print("Runway Allocation Results:")
     for f in result:
         print(f"Flight {f['flight_id']} ({f['direction']}) -> Bin: {f['allocated_bin']}")
+
+
+
+def get_slot_bins(runway_results):
+    bins = {}
+    for f in runway_results:
+        b_start = f["allocated_bin"]
+        if b_start not in bins:
+            bins[b_start] = {"bin_start": b_start, "arrivals": 0, "departures": 0, "total": 0, "pushed_in": 0, "pushed_out": 0}
+        if f["direction"] == "ARR":
+            bins[b_start]["arrivals"] += 1
+        else:
+            bins[b_start]["departures"] += 1
+        bins[b_start]["total"] += 1
+        if b_start != f["scheduled_ts"]:
+            bins[b_start]["pushed_in"] += 1
+    return [bins[k] for k in sorted(bins.keys())]

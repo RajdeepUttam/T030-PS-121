@@ -1,11 +1,11 @@
 import csv
 from parser import load_csv
-from runway import RunwayManager
 from gate_manager import GateManager
 from task_scheduler import TaskScheduler
-from outputs import write_gate_plan, write_task_schedule, write_charges
 from charges import calculate_charges
-
+from runway import RunwayManager, get_slot_bins
+from outputs import write_gate_plan, write_task_schedule, write_charges, write_slot_bins
+from commands import apply_commands
 
 def to_bool(value):
     if isinstance(value, bool):
@@ -18,6 +18,9 @@ def main():
     flights = load_csv("data/flights.csv")
     stands = load_csv("data/stands.csv")
     aircraft_types = load_csv("data/aircraft_types.csv")
+
+    # Apply commands BEFORE doing any allocations
+    flights = apply_commands(flights, "data/commands.txt")
 
     # 1. Map aircraft_type to size_code (e.g., A320 -> C)
     size_map = {row["aircraft_type"].strip(): row["size_code"].strip() for row in aircraft_types}
@@ -124,6 +127,9 @@ def main():
     print("\nGenerating Output CSVs...")
     write_gate_plan("gate_plan.csv", final_flights)
     write_task_schedule("task_schedule.csv", scheduled_tasks)
+    # 4. Slot Bins
+    slot_bins_data = get_slot_bins(runway_results)
+    write_slot_bins("slot_bins.csv", slot_bins_data)
     print("CSV files generated successfully! Check your folder.")
     # 3. Charges
     write_charges("charges.csv", charge_data)
