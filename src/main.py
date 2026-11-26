@@ -1,213 +1,98 @@
-
+import csv
 from parser import load_csv
 from runway import RunwayManager
 from gate_manager import GateManager
+from task_scheduler import TaskScheduler
 
 
 def to_bool(value):
     """Convert CSV boolean values into Python booleans."""
-
     if isinstance(value, bool):
         return value
-
-    return str(value).strip().lower() in (
-        "true", "1", "yes"
-    )
+    return str(value).strip().lower() in ("true", "1", "yes")
 
 
 def main():
-
-    # =====================================================
-    # STEP 1: LOAD CSV FILES
-    # =====================================================
-
+    print("Loading CSV files...")
     flights = load_csv("data/flights.csv")
     stands = load_csv("data/stands.csv")
     aircraft_types = load_csv("data/aircraft_types.csv")
 
-    print("CSV files loaded successfully.")
-
-    # =====================================================
-    # STEP 2: PREPARE AIRCRAFT SIZE MAPPING
-    # =====================================================
-
-    # Assumed aircraft_types.csv columns:
-    # aircraft_type, size_code
-    #
-    # Example:
-    # A320, C
-    # B777, E
-
-    aircraft_size_map = {
-        aircraft["aircraft_type"]: aircraft["size_code"]
-        for aircraft in aircraft_types
-    }
-
-    # Add the corresponding size code to each flight.
-    for flight in flights:
-
-        aircraft_type = flight["aircraft_type"]
-
-        flight["aircraft_type"] = aircraft_size_map.get(
-            aircraft_type,
-            aircraft_type
-        )
-
-        # Convert CSV boolean values into actual booleans.
-        if "international" in flight:
-            flight["international"] = to_bool(
-                flight["international"]
-            )
-
-        flight["is_delayed_over_30"] = to_bool(
-            flight.get("is_delayed_over_30", False)
-        )
-
-    # =====================================================
-    # STEP 3: LINK ARRIVALS AND DEPARTURES
-    # USING ROTATION_ID
-    # =====================================================
-
-    # Store departure flights using their rotation_id.
-    departure_map = {}
-
-    for flight in flights:
-
-        if flight["direction"] == "DEP":
-
-            rotation_id = flight["rotation_id"]
-
-            if rotation_id in departure_map:
-                raise ValueError(
-                    f"Duplicate departure for rotation: {rotation_id}"
-                )
-
-            departure_map[rotation_id] = flight
-
-    # Create combined arrival/departure records for gate allocation.
+    # 1. Map aircraft_type to size_code (e.g., A320 -> C)
+    size_map = {row["aircraft_type"].strip(): row["size_code"].strip() for row in aircraft_types}
+    
+    # 2. Clean up flights and separate arrivals/departures
+    arrivals = []
+    departures = []
+    
+    for f in flights:
+        f["international"] = to_bool(f["international"])
+        f["aircraft_size"] = size_map.get(f["aircraft_type"].strip(), "C")
+        f["rotation_id"] = f["rotation_id"].strip()
+        
+        if f["direction"].strip() == "ARR":
+            arrivals.append(f)
+        else:
+            departures.append(f)
+            
+    # 3. Link Arrivals and Departures into Rotations for the Gate Manager
+    rotation_map = {}
+    for d in departures:
+        rotation_map[d["rotation_id"]] = d
+        
     gate_flights = []
+    for a in arrivals:
+        dep = rotation_map.get(a["rotation_id"])
+        if dep:
+            combined = {
+                "flight_id": a["flight_id"],
+                "rotation_id": a["rotation_id"],
+                "airline_code": a["airline_code"].strip(),
+                "international": a["international"],
+                "aircraft_type": a["aircraft_size"],
+                "scheduled_ts": a["scheduled_ts"],
+                "departure_ts": dep["scheduled_ts"]
+            }
+            gate_flights.append(combined)
 
-    for flight in flights:
+    # 4. Runway Allocation (Processes ALL 120 movements)
+    print("Allocating Runway Slots...")
+    runway_mgr = RunwayManager()
+    
+    for f in flights:
+        f["is_delayed_over_30"] = to_bool(f.get("is_delayed_over_30", False))
+        
+    runway_results = runway_mgr.allocate_batch(flights)
 
-        if flight["direction"] == "ARR":
-
-            rotation_id = flight["rotation_id"]
-
-            # Find the matching departure.
-            departure = departure_map.get(rotation_id)
-
-            if departure is None:
-                raise ValueError(
-                    f"No matching departure found for rotation: "
-                    f"{rotation_id}"
-                )
-
-            # Create a combined flight record.
-            linked_flight = flight.copy()
-
-            # Departure time is taken from the matching DEP flight.
-            linked_flight["departure_ts"] = (
-                departure["scheduled_ts"]
-            )
-
-            gate_flights.append(linked_flight)
-
-    print("Arrival and departure flights linked successfully.")
-
-    # =====================================================
-    # STEP 4: RUNWAY SLOT ALLOCATION
-    # =====================================================
-
-    runway_manager = RunwayManager()
-
-    # Both arrivals and departures must be passed to the
-    # runway manager because both count as runway movements.
-    allocated_movements = runway_manager.allocate_batch(
-        [flight.copy() for flight in flights]
-    )
-
-    print("Runway slot allocation completed.")
-
-    # Create a lookup for allocated runway bins.
-    allocated_bin_map = {
-        flight["flight_id"]: flight["allocated_bin"]
-        for flight in allocated_movements
-    }
-
-        # =====================================================
-    # STEP 5: GATE ALLOCATION
-    # =====================================================
-
-    # Load the adjacency list so gates know who they block
+    # 5. Gate Allocation (Processes the 60 linked rotations)
+    print("Allocating Gates...")
     adjacency_list = []
     with open("data/gate_adjacency.csv", "r") as f:
-        import csv
         reader = csv.DictReader(f)
         for row in reader:
-            adjacency_list.append((row["gate_id"], row["adjacent_gate_id"]))
+            adjacency_list.append((row["gate_id"].strip(), row["adjacent_gate_id"].strip()))
 
-    # Pass the adjacency list to the GateManager!
-    gate_manager = GateManager(adjacency_list)
+    gate_mgr = GateManager(adjacency_list)
+    gate_results = gate_mgr.assign_gates(gate_flights, stands)
 
-    # Pass combined arrival/departure rotations.
-    assigned_flights = gate_manager.assign_gates(
-        gate_flights,
-        stands
-    )
+    # 6. Task Scheduler (BR-06)
+    print("Running Task Scheduler...")
+    teams = load_csv("data/service_teams.csv")
+    task_durations = load_csv("data/task_durations.csv")
+    
+    scheduler = TaskScheduler(teams, task_durations)
+    scheduled_tasks = scheduler.schedule_tasks(gate_flights)
+    print(f"Task scheduling completed. Generated {len(scheduled_tasks)} tasks.")
 
-    print("Gate allocation completed.")
-
-    # Store assigned stands using rotation_id.
-    # (THIS IS THE MISSING PART!)
-    assigned_stand_map = {
-        flight["rotation_id"]: flight["assigned_stand"]
-        for flight in assigned_flights
-    }
-
-    # =====================================================
-    # STEP 6: COMBINE RUNWAY AND GATE RESULTS
-    # =====================================================
-
-    final_flights = []
-
-    for flight in flights:
-
-        result = flight.copy()
-
-        # Add allocated runway bin.
-        result["allocated_bin"] = allocated_bin_map.get(
-            flight["flight_id"]
-        )
-
-        # Add the stand assigned to its aircraft rotation.
-        result["assigned_stand"] = assigned_stand_map.get(
-            flight["rotation_id"]
-        )
-
-        final_flights.append(result)
-
-    # =====================================================
-    # STEP 7: DISPLAY FIRST FIVE FLIGHTS
-    # =====================================================
-
+    # 7. Print the first 5 results to verify
     print("\nFIRST 5 FLIGHT ALLOCATIONS")
     print("-" * 75)
-
-    for flight in final_flights[:5]:
-
-        print(
-            f"Flight ID: {flight['flight_id']} | "
-            f"Direction: {flight['direction']} | "
-            f"Allocated Bin: {flight['allocated_bin']} | "
-            f"Assigned Stand: {flight['assigned_stand']}"
-        )
-
+    for i in range(5):
+        if i < len(runway_results) and i < len(gate_results):
+            r = runway_results[i]
+            g = gate_results[i]
+            print(f"Flight ID: {r['flight_id']} | Direction: {r['direction']} | Allocated Bin: {r.get('allocated_bin')} | Assigned Stand: {g.get('assigned_stand')}")
     print("-" * 75)
-
-
-# =========================================================
-# PROGRAM ENTRY POINT
-# =========================================================
 
 if __name__ == "__main__":
     main()
