@@ -134,14 +134,22 @@ def main():
         for flight in allocated_movements
     }
 
-    # =====================================================
+        # =====================================================
     # STEP 5: GATE ALLOCATION
     # =====================================================
 
-    gate_manager = GateManager()
+    # Load the adjacency list so gates know who they block
+    adjacency_list = []
+    with open("data/gate_adjacency.csv", "r") as f:
+        import csv
+        reader = csv.DictReader(f)
+        for row in reader:
+            adjacency_list.append((row["gate_id"], row["adjacent_gate_id"]))
+
+    # Pass the adjacency list to the GateManager!
+    gate_manager = GateManager(adjacency_list)
 
     # Pass combined arrival/departure rotations.
-    # Each rotation receives one stand for its turnaround.
     assigned_flights = gate_manager.assign_gates(
         gate_flights,
         stands
@@ -150,6 +158,7 @@ def main():
     print("Gate allocation completed.")
 
     # Store assigned stands using rotation_id.
+    # (THIS IS THE MISSING PART!)
     assigned_stand_map = {
         flight["rotation_id"]: flight["assigned_stand"]
         for flight in assigned_flights
