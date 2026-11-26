@@ -1,0 +1,2570 @@
+{
+  "aircraft_types": [
+    {
+      "aircraft_type": "A320",
+      "size_code": "C",
+      "seats": "180"
+    },
+    {
+      "aircraft_type": "A321",
+      "size_code": "C",
+      "seats": "220"
+    },
+    {
+      "aircraft_type": "B738",
+      "size_code": "C",
+      "seats": "189"
+    },
+    {
+      "aircraft_type": "ATR72",
+      "size_code": "C",
+      "seats": "72"
+    },
+    {
+      "aircraft_type": "B787",
+      "size_code": "E",
+      "seats": "256"
+    },
+    {
+      "aircraft_type": "A350",
+      "size_code": "E",
+      "seats": "316"
+    }
+  ],
+  "airlines": [
+    {
+      "airline_code": "KV",
+      "airline_name": "Kaveri Air",
+      "low_cost": "false",
+      "quick_turn": "false",
+      "preferred_gate": "G03"
+    },
+    {
+      "airline_code": "DW",
+      "airline_name": "Deccan Wings",
+      "low_cost": "false",
+      "quick_turn": "false",
+      "preferred_gate": "G09"
+    },
+    {
+      "airline_code": "SB",
+      "airline_name": "SkyBridge International",
+      "low_cost": "false",
+      "quick_turn": "false",
+      "preferred_gate": "G13"
+    },
+    {
+      "airline_code": "NX",
+      "airline_name": "Nilgiri Express",
+      "low_cost": "true",
+      "quick_turn": "true",
+      "preferred_gate": "G12"
+    }
+  ],
+  "charge_rates": [
+    {
+      "charge_code": "PARKING_C",
+      "rate": "400.00",
+      "unit": "Rs per 15 min started after the free period"
+    },
+    {
+      "charge_code": "PARKING_E",
+      "rate": "900.00",
+      "unit": "Rs per 15 min started after the free period"
+    },
+    {
+      "charge_code": "FREE_CONTACT_MIN",
+      "rate": "120",
+      "unit": "min"
+    },
+    {
+      "charge_code": "FREE_REMOTE_MIN",
+      "rate": "240",
+      "unit": "min"
+    },
+    {
+      "charge_code": "AEROBRIDGE",
+      "rate": "2500.00",
+      "unit": "Rs per use"
+    },
+    {
+      "charge_code": "TOW",
+      "rate": "6000.00",
+      "unit": "Rs per movement"
+    },
+    {
+      "charge_code": "PEAK_SURCHARGE_PCT",
+      "rate": "25.00",
+      "unit": "pct on parking 06:00-09:00 and 18:00-21:00"
+    },
+    {
+      "charge_code": "DELAY_PENALTY",
+      "rate": "10000.00",
+      "unit": "Rs per 15 min started"
+    }
+  ],
+  "flights": [
+    {
+      "flight_id": "FLT-0001",
+      "rotation_id": "ROT-001",
+      "airline_code": "KV",
+      "flight_no": "KV 507",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 05:00:00",
+      "origin_or_destination": "COK",
+      "international": "false",
+      "aircraft_reg": "VT-RXY",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0002",
+      "rotation_id": "ROT-002",
+      "airline_code": "DW",
+      "flight_no": "DW 2101",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 05:05:00",
+      "origin_or_destination": "TRV",
+      "international": "false",
+      "aircraft_reg": "VT-ALF",
+      "aircraft_type": "B738",
+      "connecting_flight_id": "FLT-0031"
+    },
+    {
+      "flight_id": "FLT-0003",
+      "rotation_id": "ROT-003",
+      "airline_code": "DW",
+      "flight_no": "DW 2116",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 06:10:00",
+      "origin_or_destination": "PNQ",
+      "international": "false",
+      "aircraft_reg": "VT-PHD",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0004",
+      "rotation_id": "ROT-004",
+      "airline_code": "DW",
+      "flight_no": "DW 2131",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 06:15:00",
+      "origin_or_destination": "TRV",
+      "international": "false",
+      "aircraft_reg": "VT-OVP",
+      "aircraft_type": "B738",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0005",
+      "rotation_id": "ROT-001",
+      "airline_code": "KV",
+      "flight_no": "KV 511",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 06:15:00",
+      "origin_or_destination": "IXE",
+      "international": "false",
+      "aircraft_reg": "VT-RXY",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0006",
+      "rotation_id": "ROT-005",
+      "airline_code": "SB",
+      "flight_no": "SB 809",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 06:18:00",
+      "origin_or_destination": "AMD",
+      "international": "false",
+      "aircraft_reg": "VT-DWT",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0007",
+      "rotation_id": "ROT-006",
+      "airline_code": "KV",
+      "flight_no": "KV 514",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 06:26:00",
+      "origin_or_destination": "IXE",
+      "international": "false",
+      "aircraft_reg": "VT-YEB",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0008",
+      "rotation_id": "ROT-007",
+      "airline_code": "DW",
+      "flight_no": "DW 2143",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 06:34:00",
+      "origin_or_destination": "COK",
+      "international": "false",
+      "aircraft_reg": "VT-PQQ",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0009",
+      "rotation_id": "ROT-008",
+      "airline_code": "DW",
+      "flight_no": "DW 2149",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 06:35:00",
+      "origin_or_destination": "DEL",
+      "international": "false",
+      "aircraft_reg": "VT-KIS",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0010",
+      "rotation_id": "ROT-002",
+      "airline_code": "DW",
+      "flight_no": "DW 2109",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 06:35:00",
+      "origin_or_destination": "MAA",
+      "international": "false",
+      "aircraft_reg": "VT-ALF",
+      "aircraft_type": "B738",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0011",
+      "rotation_id": "ROT-009",
+      "airline_code": "DW",
+      "flight_no": "DW 2152",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 06:40:00",
+      "origin_or_destination": "DEL",
+      "international": "false",
+      "aircraft_reg": "VT-XMK",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0012",
+      "rotation_id": "ROT-010",
+      "airline_code": "DW",
+      "flight_no": "DW 2162",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 06:42:00",
+      "origin_or_destination": "AMD",
+      "international": "false",
+      "aircraft_reg": "VT-PMQ",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0013",
+      "rotation_id": "ROT-011",
+      "airline_code": "KV",
+      "flight_no": "KV 522",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 06:50:00",
+      "origin_or_destination": "COK",
+      "international": "false",
+      "aircraft_reg": "VT-RPD",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0014",
+      "rotation_id": "ROT-012",
+      "airline_code": "SB",
+      "flight_no": "SB 815",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 06:50:00",
+      "origin_or_destination": "DXB",
+      "international": "true",
+      "aircraft_reg": "VT-YRI",
+      "aircraft_type": "B787",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0015",
+      "rotation_id": "ROT-013",
+      "airline_code": "KV",
+      "flight_no": "KV 537",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 07:10:00",
+      "origin_or_destination": "DEL",
+      "international": "false",
+      "aircraft_reg": "VT-HDT",
+      "aircraft_type": "A320",
+      "connecting_flight_id": "FLT-0035"
+    },
+    {
+      "flight_id": "FLT-0016",
+      "rotation_id": "ROT-014",
+      "airline_code": "DW",
+      "flight_no": "DW 2172",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 07:25:00",
+      "origin_or_destination": "DEL",
+      "international": "false",
+      "aircraft_reg": "VT-NYI",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0017",
+      "rotation_id": "ROT-004",
+      "airline_code": "DW",
+      "flight_no": "DW 2134",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 07:30:00",
+      "origin_or_destination": "JAI",
+      "international": "false",
+      "aircraft_reg": "VT-OVP",
+      "aircraft_type": "B738",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0018",
+      "rotation_id": "ROT-009",
+      "airline_code": "DW",
+      "flight_no": "DW 2161",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 07:30:00",
+      "origin_or_destination": "MAA",
+      "international": "false",
+      "aircraft_reg": "VT-XMK",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0019",
+      "rotation_id": "ROT-011",
+      "airline_code": "KV",
+      "flight_no": "KV 528",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 08:00:00",
+      "origin_or_destination": "IXE",
+      "international": "false",
+      "aircraft_reg": "VT-RPD",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0020",
+      "rotation_id": "ROT-015",
+      "airline_code": "DW",
+      "flight_no": "DW 2177",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 08:01:00",
+      "origin_or_destination": "PNQ",
+      "international": "false",
+      "aircraft_reg": "VT-ATC",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0021",
+      "rotation_id": "ROT-010",
+      "airline_code": "DW",
+      "flight_no": "DW 2168",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 08:02:00",
+      "origin_or_destination": "IXE",
+      "international": "false",
+      "aircraft_reg": "VT-PMQ",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0022",
+      "rotation_id": "ROT-016",
+      "airline_code": "KV",
+      "flight_no": "KV 548",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 08:03:00",
+      "origin_or_destination": "DEL",
+      "international": "false",
+      "aircraft_reg": "VT-AVP",
+      "aircraft_type": "B738",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0023",
+      "rotation_id": "ROT-007",
+      "airline_code": "DW",
+      "flight_no": "DW 2146",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 08:04:00",
+      "origin_or_destination": "IXE",
+      "international": "false",
+      "aircraft_reg": "VT-PQQ",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0024",
+      "rotation_id": "ROT-017",
+      "airline_code": "DW",
+      "flight_no": "DW 2185",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 08:05:00",
+      "origin_or_destination": "COK",
+      "international": "false",
+      "aircraft_reg": "VT-LLZ",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0025",
+      "rotation_id": "ROT-006",
+      "airline_code": "KV",
+      "flight_no": "KV 520",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 08:06:00",
+      "origin_or_destination": "HYD",
+      "international": "false",
+      "aircraft_reg": "VT-YEB",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0026",
+      "rotation_id": "ROT-018",
+      "airline_code": "DW",
+      "flight_no": "DW 2197",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 08:07:00",
+      "origin_or_destination": "AMD",
+      "international": "false",
+      "aircraft_reg": "VT-CXK",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0027",
+      "rotation_id": "ROT-005",
+      "airline_code": "SB",
+      "flight_no": "SB 810",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 08:08:00",
+      "origin_or_destination": "TRV",
+      "international": "false",
+      "aircraft_reg": "VT-DWT",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0028",
+      "rotation_id": "ROT-019",
+      "airline_code": "KV",
+      "flight_no": "KV 552",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 08:09:00",
+      "origin_or_destination": "AMD",
+      "international": "false",
+      "aircraft_reg": "VT-JOE",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0029",
+      "rotation_id": "ROT-003",
+      "airline_code": "DW",
+      "flight_no": "DW 2122",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 08:10:00",
+      "origin_or_destination": "MAA",
+      "international": "false",
+      "aircraft_reg": "VT-PHD",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0030",
+      "rotation_id": "ROT-020",
+      "airline_code": "DW",
+      "flight_no": "DW 2210",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 08:11:00",
+      "origin_or_destination": "JAI",
+      "international": "false",
+      "aircraft_reg": "VT-LON",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0031",
+      "rotation_id": "ROT-008",
+      "airline_code": "DW",
+      "flight_no": "DW 2150",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 08:20:00",
+      "origin_or_destination": "AMD",
+      "international": "false",
+      "aircraft_reg": "VT-KIS",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0032",
+      "rotation_id": "ROT-013",
+      "airline_code": "KV",
+      "flight_no": "KV 540",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 08:20:00",
+      "origin_or_destination": "HYD",
+      "international": "false",
+      "aircraft_reg": "VT-HDT",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0033",
+      "rotation_id": "ROT-014",
+      "airline_code": "DW",
+      "flight_no": "DW 2175",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 08:30:00",
+      "origin_or_destination": "BOM",
+      "international": "false",
+      "aircraft_reg": "VT-NYI",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0034",
+      "rotation_id": "ROT-021",
+      "airline_code": "NX",
+      "flight_no": "NX 3302",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 09:00:00",
+      "origin_or_destination": "JAI",
+      "international": "false",
+      "aircraft_reg": "VT-IRM",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0035",
+      "rotation_id": "ROT-012",
+      "airline_code": "SB",
+      "flight_no": "SB 819",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 09:30:00",
+      "origin_or_destination": "LHR",
+      "international": "true",
+      "aircraft_reg": "VT-YRI",
+      "aircraft_type": "B787",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0036",
+      "rotation_id": "ROT-015",
+      "airline_code": "DW",
+      "flight_no": "DW 2183",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 09:31:00",
+      "origin_or_destination": "HYD",
+      "international": "false",
+      "aircraft_reg": "VT-ATC",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0037",
+      "rotation_id": "ROT-016",
+      "airline_code": "KV",
+      "flight_no": "KV 550",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 09:38:00",
+      "origin_or_destination": "PNQ",
+      "international": "false",
+      "aircraft_reg": "VT-AVP",
+      "aircraft_type": "B738",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0038",
+      "rotation_id": "ROT-022",
+      "airline_code": "KV",
+      "flight_no": "KV 567",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 09:40:00",
+      "origin_or_destination": "PNQ",
+      "international": "false",
+      "aircraft_reg": "VT-CAO",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0039",
+      "rotation_id": "ROT-017",
+      "airline_code": "DW",
+      "flight_no": "DW 2192",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 09:45:00",
+      "origin_or_destination": "CCU",
+      "international": "false",
+      "aircraft_reg": "VT-LLZ",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0040",
+      "rotation_id": "ROT-021",
+      "airline_code": "NX",
+      "flight_no": "NX 3311",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 09:45:00",
+      "origin_or_destination": "AMD",
+      "international": "false",
+      "aircraft_reg": "VT-IRM",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0041",
+      "rotation_id": "ROT-018",
+      "airline_code": "DW",
+      "flight_no": "DW 2202",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 09:52:00",
+      "origin_or_destination": "TRV",
+      "international": "false",
+      "aircraft_reg": "VT-CXK",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0042",
+      "rotation_id": "ROT-023",
+      "airline_code": "KV",
+      "flight_no": "KV 577",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 09:55:00",
+      "origin_or_destination": "COK",
+      "international": "false",
+      "aircraft_reg": "VT-BLU",
+      "aircraft_type": "ATR72",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0043",
+      "rotation_id": "ROT-024",
+      "airline_code": "SB",
+      "flight_no": "SB 825",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 09:55:00",
+      "origin_or_destination": "BKK",
+      "international": "true",
+      "aircraft_reg": "VT-NMZ",
+      "aircraft_type": "B787",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0044",
+      "rotation_id": "ROT-019",
+      "airline_code": "KV",
+      "flight_no": "KV 558",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 09:59:00",
+      "origin_or_destination": "CCU",
+      "international": "false",
+      "aircraft_reg": "VT-JOE",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0045",
+      "rotation_id": "ROT-020",
+      "airline_code": "DW",
+      "flight_no": "DW 2218",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 10:06:00",
+      "origin_or_destination": "GOI",
+      "international": "false",
+      "aircraft_reg": "VT-LON",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0046",
+      "rotation_id": "ROT-025",
+      "airline_code": "DW",
+      "flight_no": "DW 2220",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 10:10:00",
+      "origin_or_destination": "GOI",
+      "international": "false",
+      "aircraft_reg": "VT-THV",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0047",
+      "rotation_id": "ROT-026",
+      "airline_code": "NX",
+      "flight_no": "NX 3319",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 10:20:00",
+      "origin_or_destination": "DXB",
+      "international": "true",
+      "aircraft_reg": "VT-VJR",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0048",
+      "rotation_id": "ROT-027",
+      "airline_code": "DW",
+      "flight_no": "DW 2227",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 10:40:00",
+      "origin_or_destination": "MAA",
+      "international": "false",
+      "aircraft_reg": "VT-TOZ",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0049",
+      "rotation_id": "ROT-023",
+      "airline_code": "KV",
+      "flight_no": "KV 585",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 10:45:00",
+      "origin_or_destination": "DEL",
+      "international": "false",
+      "aircraft_reg": "VT-BLU",
+      "aircraft_type": "ATR72",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0050",
+      "rotation_id": "ROT-028",
+      "airline_code": "KV",
+      "flight_no": "KV 588",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 11:00:00",
+      "origin_or_destination": "HYD",
+      "international": "false",
+      "aircraft_reg": "VT-IAB",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0051",
+      "rotation_id": "ROT-022",
+      "airline_code": "KV",
+      "flight_no": "KV 571",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 11:20:00",
+      "origin_or_destination": "BOM",
+      "international": "false",
+      "aircraft_reg": "VT-CAO",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0052",
+      "rotation_id": "ROT-029",
+      "airline_code": "KV",
+      "flight_no": "KV 601",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 11:25:00",
+      "origin_or_destination": "CCU",
+      "international": "false",
+      "aircraft_reg": "VT-NFD",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0053",
+      "rotation_id": "ROT-030",
+      "airline_code": "NX",
+      "flight_no": "NX 3333",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 11:30:00",
+      "origin_or_destination": "JAI",
+      "international": "false",
+      "aircraft_reg": "VT-ZMN",
+      "aircraft_type": "ATR72",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0054",
+      "rotation_id": "ROT-026",
+      "airline_code": "NX",
+      "flight_no": "NX 3324",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 11:35:00",
+      "origin_or_destination": "MCT",
+      "international": "true",
+      "aircraft_reg": "VT-VJR",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0055",
+      "rotation_id": "ROT-025",
+      "airline_code": "DW",
+      "flight_no": "DW 2222",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 11:40:00",
+      "origin_or_destination": "PNQ",
+      "international": "false",
+      "aircraft_reg": "VT-THV",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0056",
+      "rotation_id": "ROT-030",
+      "airline_code": "NX",
+      "flight_no": "NX 3339",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 12:05:00",
+      "origin_or_destination": "PNQ",
+      "international": "false",
+      "aircraft_reg": "VT-ZMN",
+      "aircraft_type": "ATR72",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0057",
+      "rotation_id": "ROT-031",
+      "airline_code": "SB",
+      "flight_no": "SB 833",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 12:10:00",
+      "origin_or_destination": "DOH",
+      "international": "true",
+      "aircraft_reg": "VT-AAI",
+      "aircraft_type": "A350",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0058",
+      "rotation_id": "ROT-032",
+      "airline_code": "SB",
+      "flight_no": "SB 848",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 12:30:00",
+      "origin_or_destination": "LHR",
+      "international": "true",
+      "aircraft_reg": "VT-ZDO",
+      "aircraft_type": "A350",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0059",
+      "rotation_id": "ROT-033",
+      "airline_code": "DW",
+      "flight_no": "DW 2234",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 13:00:00",
+      "origin_or_destination": "AMD",
+      "international": "false",
+      "aircraft_reg": "VT-LGI",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0060",
+      "rotation_id": "ROT-034",
+      "airline_code": "KV",
+      "flight_no": "KV 618",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 13:10:00",
+      "origin_or_destination": "HYD",
+      "international": "false",
+      "aircraft_reg": "VT-SJS",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0061",
+      "rotation_id": "ROT-035",
+      "airline_code": "SB",
+      "flight_no": "SB 860",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 13:25:00",
+      "origin_or_destination": "BKK",
+      "international": "true",
+      "aircraft_reg": "VT-JLE",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0062",
+      "rotation_id": "ROT-024",
+      "airline_code": "SB",
+      "flight_no": "SB 827",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 13:25:00",
+      "origin_or_destination": "CMB",
+      "international": "true",
+      "aircraft_reg": "VT-NMZ",
+      "aircraft_type": "B787",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0063",
+      "rotation_id": "ROT-029",
+      "airline_code": "KV",
+      "flight_no": "KV 610",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 13:40:00",
+      "origin_or_destination": "DEL",
+      "international": "false",
+      "aircraft_reg": "VT-NFD",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0064",
+      "rotation_id": "ROT-036",
+      "airline_code": "NX",
+      "flight_no": "NX 3346",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 14:00:00",
+      "origin_or_destination": "CMB",
+      "international": "true",
+      "aircraft_reg": "VT-ZUQ",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0065",
+      "rotation_id": "ROT-034",
+      "airline_code": "KV",
+      "flight_no": "KV 622",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 14:40:00",
+      "origin_or_destination": "JAI",
+      "international": "false",
+      "aircraft_reg": "VT-SJS",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0066",
+      "rotation_id": "ROT-027",
+      "airline_code": "DW",
+      "flight_no": "DW 2231",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 14:45:00",
+      "origin_or_destination": "TRV",
+      "international": "false",
+      "aircraft_reg": "VT-TOZ",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0067",
+      "rotation_id": "ROT-035",
+      "airline_code": "SB",
+      "flight_no": "SB 866",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 14:45:00",
+      "origin_or_destination": "CMB",
+      "international": "true",
+      "aircraft_reg": "VT-JLE",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0068",
+      "rotation_id": "ROT-037",
+      "airline_code": "SB",
+      "flight_no": "SB 870",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 14:50:00",
+      "origin_or_destination": "CMB",
+      "international": "true",
+      "aircraft_reg": "VT-DGH",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0069",
+      "rotation_id": "ROT-028",
+      "airline_code": "KV",
+      "flight_no": "KV 594",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 15:00:00",
+      "origin_or_destination": "CCU",
+      "international": "false",
+      "aircraft_reg": "VT-IAB",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0070",
+      "rotation_id": "ROT-032",
+      "airline_code": "SB",
+      "flight_no": "SB 854",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 15:00:00",
+      "origin_or_destination": "MCT",
+      "international": "true",
+      "aircraft_reg": "VT-ZDO",
+      "aircraft_type": "A350",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0071",
+      "rotation_id": "ROT-033",
+      "airline_code": "DW",
+      "flight_no": "DW 2238",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 15:00:00",
+      "origin_or_destination": "PNQ",
+      "international": "false",
+      "aircraft_reg": "VT-LGI",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0072",
+      "rotation_id": "ROT-036",
+      "airline_code": "NX",
+      "flight_no": "NX 3353",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 15:00:00",
+      "origin_or_destination": "KUL",
+      "international": "true",
+      "aircraft_reg": "VT-ZUQ",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0073",
+      "rotation_id": "ROT-038",
+      "airline_code": "KV",
+      "flight_no": "KV 630",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 15:20:00",
+      "origin_or_destination": "DEL",
+      "international": "false",
+      "aircraft_reg": "VT-BEQ",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0074",
+      "rotation_id": "ROT-039",
+      "airline_code": "DW",
+      "flight_no": "DW 2245",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 15:25:00",
+      "origin_or_destination": "COK",
+      "international": "false",
+      "aircraft_reg": "VT-SAR",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0075",
+      "rotation_id": "ROT-040",
+      "airline_code": "SB",
+      "flight_no": "SB 879",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 15:30:00",
+      "origin_or_destination": "MCT",
+      "international": "true",
+      "aircraft_reg": "VT-QYP",
+      "aircraft_type": "B787",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0076",
+      "rotation_id": "ROT-031",
+      "airline_code": "SB",
+      "flight_no": "SB 841",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 15:40:00",
+      "origin_or_destination": "KUL",
+      "international": "true",
+      "aircraft_reg": "VT-AAI",
+      "aircraft_type": "A350",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0077",
+      "rotation_id": "ROT-041",
+      "airline_code": "SB",
+      "flight_no": "SB 887",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 16:00:00",
+      "origin_or_destination": "SIN",
+      "international": "true",
+      "aircraft_reg": "VT-OST",
+      "aircraft_type": "A350",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0078",
+      "rotation_id": "ROT-042",
+      "airline_code": "KV",
+      "flight_no": "KV 641",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 16:10:00",
+      "origin_or_destination": "DOH",
+      "international": "true",
+      "aircraft_reg": "VT-HPS",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0079",
+      "rotation_id": "ROT-043",
+      "airline_code": "DW",
+      "flight_no": "DW 2253",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 16:20:00",
+      "origin_or_destination": "HYD",
+      "international": "false",
+      "aircraft_reg": "VT-LOU",
+      "aircraft_type": "B738",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0080",
+      "rotation_id": "ROT-044",
+      "airline_code": "SB",
+      "flight_no": "SB 897",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 16:25:00",
+      "origin_or_destination": "FRA",
+      "international": "true",
+      "aircraft_reg": "VT-YNV",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0081",
+      "rotation_id": "ROT-037",
+      "airline_code": "SB",
+      "flight_no": "SB 873",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 16:35:00",
+      "origin_or_destination": "BKK",
+      "international": "true",
+      "aircraft_reg": "VT-DGH",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0082",
+      "rotation_id": "ROT-045",
+      "airline_code": "KV",
+      "flight_no": "KV 652",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 16:40:00",
+      "origin_or_destination": "COK",
+      "international": "false",
+      "aircraft_reg": "VT-VBJ",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0083",
+      "rotation_id": "ROT-038",
+      "airline_code": "KV",
+      "flight_no": "KV 633",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 16:50:00",
+      "origin_or_destination": "DEL",
+      "international": "false",
+      "aircraft_reg": "VT-BEQ",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0084",
+      "rotation_id": "ROT-046",
+      "airline_code": "KV",
+      "flight_no": "KV 664",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 16:55:00",
+      "origin_or_destination": "JAI",
+      "international": "false",
+      "aircraft_reg": "VT-RYS",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0085",
+      "rotation_id": "ROT-047",
+      "airline_code": "NX",
+      "flight_no": "NX 3358",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 16:55:00",
+      "origin_or_destination": "DEL",
+      "international": "false",
+      "aircraft_reg": "VT-LRX",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0086",
+      "rotation_id": "ROT-048",
+      "airline_code": "KV",
+      "flight_no": "KV 674",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 17:00:00",
+      "origin_or_destination": "JAI",
+      "international": "false",
+      "aircraft_reg": "VT-ZQI",
+      "aircraft_type": "B738",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0087",
+      "rotation_id": "ROT-049",
+      "airline_code": "KV",
+      "flight_no": "KV 688",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 17:00:00",
+      "origin_or_destination": "DXB",
+      "international": "true",
+      "aircraft_reg": "VT-YUG",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0088",
+      "rotation_id": "ROT-039",
+      "airline_code": "DW",
+      "flight_no": "DW 2250",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 17:40:00",
+      "origin_or_destination": "GOI",
+      "international": "false",
+      "aircraft_reg": "VT-SAR",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0089",
+      "rotation_id": "ROT-047",
+      "airline_code": "NX",
+      "flight_no": "NX 3363",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 17:40:00",
+      "origin_or_destination": "CCU",
+      "international": "false",
+      "aircraft_reg": "VT-LRX",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0090",
+      "rotation_id": "ROT-044",
+      "airline_code": "SB",
+      "flight_no": "SB 901",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 17:55:00",
+      "origin_or_destination": "KUL",
+      "international": "true",
+      "aircraft_reg": "VT-YNV",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0091",
+      "rotation_id": "ROT-050",
+      "airline_code": "SB",
+      "flight_no": "SB 910",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 18:00:00",
+      "origin_or_destination": "CMB",
+      "international": "true",
+      "aircraft_reg": "VT-KYO",
+      "aircraft_type": "A350",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0092",
+      "rotation_id": "ROT-040",
+      "airline_code": "SB",
+      "flight_no": "SB 881",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 18:00:00",
+      "origin_or_destination": "MCT",
+      "international": "true",
+      "aircraft_reg": "VT-QYP",
+      "aircraft_type": "B787",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0093",
+      "rotation_id": "ROT-045",
+      "airline_code": "KV",
+      "flight_no": "KV 655",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 18:00:00",
+      "origin_or_destination": "AMD",
+      "international": "false",
+      "aircraft_reg": "VT-VBJ",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0094",
+      "rotation_id": "ROT-051",
+      "airline_code": "DW",
+      "flight_no": "DW 2269",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 18:05:00",
+      "origin_or_destination": "CCU",
+      "international": "false",
+      "aircraft_reg": "VT-PYN",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0095",
+      "rotation_id": "ROT-042",
+      "airline_code": "KV",
+      "flight_no": "KV 646",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 18:10:00",
+      "origin_or_destination": "CMB",
+      "international": "true",
+      "aircraft_reg": "VT-HPS",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0096",
+      "rotation_id": "ROT-048",
+      "airline_code": "KV",
+      "flight_no": "KV 681",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 18:10:00",
+      "origin_or_destination": "JAI",
+      "international": "false",
+      "aircraft_reg": "VT-ZQI",
+      "aircraft_type": "B738",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0097",
+      "rotation_id": "ROT-041",
+      "airline_code": "SB",
+      "flight_no": "SB 892",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 18:20:00",
+      "origin_or_destination": "MCT",
+      "international": "true",
+      "aircraft_reg": "VT-OST",
+      "aircraft_type": "A350",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0098",
+      "rotation_id": "ROT-046",
+      "airline_code": "KV",
+      "flight_no": "KV 666",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 18:25:00",
+      "origin_or_destination": "CCU",
+      "international": "false",
+      "aircraft_reg": "VT-RYS",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0099",
+      "rotation_id": "ROT-052",
+      "airline_code": "DW",
+      "flight_no": "DW 2277",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 18:30:00",
+      "origin_or_destination": "PNQ",
+      "international": "false",
+      "aircraft_reg": "VT-NXP",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0100",
+      "rotation_id": "ROT-043",
+      "airline_code": "DW",
+      "flight_no": "DW 2262",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 18:35:00",
+      "origin_or_destination": "GOI",
+      "international": "false",
+      "aircraft_reg": "VT-LOU",
+      "aircraft_type": "B738",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0101",
+      "rotation_id": "ROT-049",
+      "airline_code": "KV",
+      "flight_no": "KV 689",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 18:45:00",
+      "origin_or_destination": "MCT",
+      "international": "true",
+      "aircraft_reg": "VT-YUG",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0102",
+      "rotation_id": "ROT-053",
+      "airline_code": "SB",
+      "flight_no": "SB 925",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 19:00:00",
+      "origin_or_destination": "SIN",
+      "international": "true",
+      "aircraft_reg": "VT-XNE",
+      "aircraft_type": "B787",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0103",
+      "rotation_id": "ROT-051",
+      "airline_code": "DW",
+      "flight_no": "DW 2275",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 19:00:00",
+      "origin_or_destination": "PNQ",
+      "international": "false",
+      "aircraft_reg": "VT-PYN",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0104",
+      "rotation_id": "ROT-054",
+      "airline_code": "KV",
+      "flight_no": "KV 693",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 19:30:00",
+      "origin_or_destination": "IXE",
+      "international": "false",
+      "aircraft_reg": "VT-CTZ",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0105",
+      "rotation_id": "ROT-052",
+      "airline_code": "DW",
+      "flight_no": "DW 2285",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 19:30:00",
+      "origin_or_destination": "MAA",
+      "international": "false",
+      "aircraft_reg": "VT-NXP",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0106",
+      "rotation_id": "ROT-055",
+      "airline_code": "KV",
+      "flight_no": "KV 706",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 19:55:00",
+      "origin_or_destination": "TRV",
+      "international": "false",
+      "aircraft_reg": "VT-EPA",
+      "aircraft_type": "B738",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0107",
+      "rotation_id": "ROT-056",
+      "airline_code": "DW",
+      "flight_no": "DW 2286",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 20:00:00",
+      "origin_or_destination": "DEL",
+      "international": "false",
+      "aircraft_reg": "VT-IPL",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0108",
+      "rotation_id": "ROT-057",
+      "airline_code": "SB",
+      "flight_no": "SB 937",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 20:00:00",
+      "origin_or_destination": "DOH",
+      "international": "true",
+      "aircraft_reg": "VT-INR",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0109",
+      "rotation_id": "ROT-050",
+      "airline_code": "SB",
+      "flight_no": "SB 916",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 20:05:00",
+      "origin_or_destination": "LHR",
+      "international": "true",
+      "aircraft_reg": "VT-KYO",
+      "aircraft_type": "A350",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0110",
+      "rotation_id": "ROT-058",
+      "airline_code": "SB",
+      "flight_no": "SB 943",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 20:40:00",
+      "origin_or_destination": "DXB",
+      "international": "true",
+      "aircraft_reg": "VT-IKU",
+      "aircraft_type": "B787",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0111",
+      "rotation_id": "ROT-054",
+      "airline_code": "KV",
+      "flight_no": "KV 700",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 20:40:00",
+      "origin_or_destination": "AMD",
+      "international": "false",
+      "aircraft_reg": "VT-CTZ",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0112",
+      "rotation_id": "ROT-055",
+      "airline_code": "KV",
+      "flight_no": "KV 712",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 20:50:00",
+      "origin_or_destination": "COK",
+      "international": "false",
+      "aircraft_reg": "VT-EPA",
+      "aircraft_type": "B738",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0113",
+      "rotation_id": "ROT-053",
+      "airline_code": "SB",
+      "flight_no": "SB 934",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 21:20:00",
+      "origin_or_destination": "KUL",
+      "international": "true",
+      "aircraft_reg": "VT-XNE",
+      "aircraft_type": "B787",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0114",
+      "rotation_id": "ROT-056",
+      "airline_code": "DW",
+      "flight_no": "DW 2293",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 21:20:00",
+      "origin_or_destination": "TRV",
+      "international": "false",
+      "aircraft_reg": "VT-IPL",
+      "aircraft_type": "A321",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0115",
+      "rotation_id": "ROT-059",
+      "airline_code": "KV",
+      "flight_no": "KV 717",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 21:25:00",
+      "origin_or_destination": "JAI",
+      "international": "false",
+      "aircraft_reg": "VT-AJW",
+      "aircraft_type": "B738",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0116",
+      "rotation_id": "ROT-060",
+      "airline_code": "SB",
+      "flight_no": "SB 958",
+      "direction": "ARR",
+      "scheduled_ts": "2026-10-14 21:35:00",
+      "origin_or_destination": "KUL",
+      "international": "true",
+      "aircraft_reg": "VT-EXM",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0117",
+      "rotation_id": "ROT-057",
+      "airline_code": "SB",
+      "flight_no": "SB 938",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 22:00:00",
+      "origin_or_destination": "FRA",
+      "international": "true",
+      "aircraft_reg": "VT-INR",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0118",
+      "rotation_id": "ROT-060",
+      "airline_code": "SB",
+      "flight_no": "SB 965",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 22:40:00",
+      "origin_or_destination": "CMB",
+      "international": "true",
+      "aircraft_reg": "VT-EXM",
+      "aircraft_type": "A320",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0119",
+      "rotation_id": "ROT-059",
+      "airline_code": "KV",
+      "flight_no": "KV 720",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 23:10:00",
+      "origin_or_destination": "COK",
+      "international": "false",
+      "aircraft_reg": "VT-AJW",
+      "aircraft_type": "B738",
+      "connecting_flight_id": ""
+    },
+    {
+      "flight_id": "FLT-0120",
+      "rotation_id": "ROT-058",
+      "airline_code": "SB",
+      "flight_no": "SB 952",
+      "direction": "DEP",
+      "scheduled_ts": "2026-10-14 23:25:00",
+      "origin_or_destination": "CMB",
+      "international": "true",
+      "aircraft_reg": "VT-IKU",
+      "aircraft_type": "B787",
+      "connecting_flight_id": ""
+    }
+  ],
+  "gate_adjacency": [
+    {
+      "gate_id": "G03",
+      "adjacent_gate_id": "G04"
+    },
+    {
+      "gate_id": "G04",
+      "adjacent_gate_id": "G03"
+    },
+    {
+      "gate_id": "G04",
+      "adjacent_gate_id": "G05"
+    },
+    {
+      "gate_id": "G05",
+      "adjacent_gate_id": "G04"
+    },
+    {
+      "gate_id": "G06",
+      "adjacent_gate_id": "G07"
+    },
+    {
+      "gate_id": "G07",
+      "adjacent_gate_id": "G06"
+    },
+    {
+      "gate_id": "G07",
+      "adjacent_gate_id": "G08"
+    },
+    {
+      "gate_id": "G08",
+      "adjacent_gate_id": "G07"
+    },
+    {
+      "gate_id": "G11",
+      "adjacent_gate_id": "G12"
+    },
+    {
+      "gate_id": "G12",
+      "adjacent_gate_id": "G11"
+    },
+    {
+      "gate_id": "G13",
+      "adjacent_gate_id": "G14"
+    },
+    {
+      "gate_id": "G14",
+      "adjacent_gate_id": "G13"
+    },
+    {
+      "gate_id": "G14",
+      "adjacent_gate_id": "G15"
+    },
+    {
+      "gate_id": "G15",
+      "adjacent_gate_id": "G14"
+    },
+    {
+      "gate_id": "G15",
+      "adjacent_gate_id": "G16"
+    },
+    {
+      "gate_id": "G16",
+      "adjacent_gate_id": "G15"
+    },
+    {
+      "gate_id": "G16",
+      "adjacent_gate_id": "G17"
+    },
+    {
+      "gate_id": "G17",
+      "adjacent_gate_id": "G16"
+    },
+    {
+      "gate_id": "G17",
+      "adjacent_gate_id": "G18"
+    },
+    {
+      "gate_id": "G18",
+      "adjacent_gate_id": "G17"
+    }
+  ],
+  "runway_capacity": [
+    {
+      "bin_start": "2026-10-14 00:00:00",
+      "bin_end": "2026-10-14 00:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 00:15:00",
+      "bin_end": "2026-10-14 00:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 00:30:00",
+      "bin_end": "2026-10-14 00:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 00:45:00",
+      "bin_end": "2026-10-14 01:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 01:00:00",
+      "bin_end": "2026-10-14 01:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 01:15:00",
+      "bin_end": "2026-10-14 01:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 01:30:00",
+      "bin_end": "2026-10-14 01:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 01:45:00",
+      "bin_end": "2026-10-14 02:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 02:00:00",
+      "bin_end": "2026-10-14 02:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 02:15:00",
+      "bin_end": "2026-10-14 02:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 02:30:00",
+      "bin_end": "2026-10-14 02:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 02:45:00",
+      "bin_end": "2026-10-14 03:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 03:00:00",
+      "bin_end": "2026-10-14 03:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 03:15:00",
+      "bin_end": "2026-10-14 03:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 03:30:00",
+      "bin_end": "2026-10-14 03:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 03:45:00",
+      "bin_end": "2026-10-14 04:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 04:00:00",
+      "bin_end": "2026-10-14 04:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 04:15:00",
+      "bin_end": "2026-10-14 04:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 04:30:00",
+      "bin_end": "2026-10-14 04:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 04:45:00",
+      "bin_end": "2026-10-14 05:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 05:00:00",
+      "bin_end": "2026-10-14 05:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 05:15:00",
+      "bin_end": "2026-10-14 05:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 05:30:00",
+      "bin_end": "2026-10-14 05:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 05:45:00",
+      "bin_end": "2026-10-14 06:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 06:00:00",
+      "bin_end": "2026-10-14 06:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 06:15:00",
+      "bin_end": "2026-10-14 06:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 06:30:00",
+      "bin_end": "2026-10-14 06:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 06:45:00",
+      "bin_end": "2026-10-14 07:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 07:00:00",
+      "bin_end": "2026-10-14 07:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 07:15:00",
+      "bin_end": "2026-10-14 07:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 07:30:00",
+      "bin_end": "2026-10-14 07:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 07:45:00",
+      "bin_end": "2026-10-14 08:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 08:00:00",
+      "bin_end": "2026-10-14 08:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 08:15:00",
+      "bin_end": "2026-10-14 08:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 08:30:00",
+      "bin_end": "2026-10-14 08:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 08:45:00",
+      "bin_end": "2026-10-14 09:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 09:00:00",
+      "bin_end": "2026-10-14 09:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 09:15:00",
+      "bin_end": "2026-10-14 09:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 09:30:00",
+      "bin_end": "2026-10-14 09:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 09:45:00",
+      "bin_end": "2026-10-14 10:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 10:00:00",
+      "bin_end": "2026-10-14 10:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 10:15:00",
+      "bin_end": "2026-10-14 10:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 10:30:00",
+      "bin_end": "2026-10-14 10:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 10:45:00",
+      "bin_end": "2026-10-14 11:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 11:00:00",
+      "bin_end": "2026-10-14 11:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 11:15:00",
+      "bin_end": "2026-10-14 11:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 11:30:00",
+      "bin_end": "2026-10-14 11:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 11:45:00",
+      "bin_end": "2026-10-14 12:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 12:00:00",
+      "bin_end": "2026-10-14 12:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 12:15:00",
+      "bin_end": "2026-10-14 12:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 12:30:00",
+      "bin_end": "2026-10-14 12:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 12:45:00",
+      "bin_end": "2026-10-14 13:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 13:00:00",
+      "bin_end": "2026-10-14 13:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 13:15:00",
+      "bin_end": "2026-10-14 13:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 13:30:00",
+      "bin_end": "2026-10-14 13:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 13:45:00",
+      "bin_end": "2026-10-14 14:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 14:00:00",
+      "bin_end": "2026-10-14 14:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 14:15:00",
+      "bin_end": "2026-10-14 14:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 14:30:00",
+      "bin_end": "2026-10-14 14:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 14:45:00",
+      "bin_end": "2026-10-14 15:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 15:00:00",
+      "bin_end": "2026-10-14 15:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 15:15:00",
+      "bin_end": "2026-10-14 15:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 15:30:00",
+      "bin_end": "2026-10-14 15:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 15:45:00",
+      "bin_end": "2026-10-14 16:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 16:00:00",
+      "bin_end": "2026-10-14 16:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 16:15:00",
+      "bin_end": "2026-10-14 16:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 16:30:00",
+      "bin_end": "2026-10-14 16:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 16:45:00",
+      "bin_end": "2026-10-14 17:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 17:00:00",
+      "bin_end": "2026-10-14 17:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 17:15:00",
+      "bin_end": "2026-10-14 17:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 17:30:00",
+      "bin_end": "2026-10-14 17:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 17:45:00",
+      "bin_end": "2026-10-14 18:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 18:00:00",
+      "bin_end": "2026-10-14 18:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 18:15:00",
+      "bin_end": "2026-10-14 18:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 18:30:00",
+      "bin_end": "2026-10-14 18:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 18:45:00",
+      "bin_end": "2026-10-14 19:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 19:00:00",
+      "bin_end": "2026-10-14 19:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 19:15:00",
+      "bin_end": "2026-10-14 19:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 19:30:00",
+      "bin_end": "2026-10-14 19:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 19:45:00",
+      "bin_end": "2026-10-14 20:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 20:00:00",
+      "bin_end": "2026-10-14 20:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 20:15:00",
+      "bin_end": "2026-10-14 20:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 20:30:00",
+      "bin_end": "2026-10-14 20:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 20:45:00",
+      "bin_end": "2026-10-14 21:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 21:00:00",
+      "bin_end": "2026-10-14 21:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 21:15:00",
+      "bin_end": "2026-10-14 21:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 21:30:00",
+      "bin_end": "2026-10-14 21:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 21:45:00",
+      "bin_end": "2026-10-14 22:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 22:00:00",
+      "bin_end": "2026-10-14 22:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 22:15:00",
+      "bin_end": "2026-10-14 22:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 22:30:00",
+      "bin_end": "2026-10-14 22:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 22:45:00",
+      "bin_end": "2026-10-14 23:00:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 23:00:00",
+      "bin_end": "2026-10-14 23:15:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 23:15:00",
+      "bin_end": "2026-10-14 23:30:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 23:30:00",
+      "bin_end": "2026-10-14 23:45:00",
+      "capacity": "12"
+    },
+    {
+      "bin_start": "2026-10-14 23:45:00",
+      "bin_end": "2026-10-15 00:00:00",
+      "capacity": "12"
+    }
+  ],
+  "service_teams": [
+    {
+      "team_id": "TEAM-01",
+      "task_type": "PAX_HANDLING",
+      "team_size": "4"
+    },
+    {
+      "team_id": "TEAM-02",
+      "task_type": "PAX_HANDLING",
+      "team_size": "5"
+    },
+    {
+      "team_id": "TEAM-03",
+      "task_type": "PAX_HANDLING",
+      "team_size": "6"
+    },
+    {
+      "team_id": "TEAM-04",
+      "task_type": "CLEANING",
+      "team_size": "6"
+    },
+    {
+      "team_id": "TEAM-05",
+      "task_type": "CLEANING",
+      "team_size": "6"
+    },
+    {
+      "team_id": "TEAM-06",
+      "task_type": "FUELLING",
+      "team_size": "4"
+    },
+    {
+      "team_id": "TEAM-07",
+      "task_type": "FUELLING",
+      "team_size": "4"
+    },
+    {
+      "team_id": "TEAM-08",
+      "task_type": "CATERING",
+      "team_size": "6"
+    },
+    {
+      "team_id": "TEAM-09",
+      "task_type": "CATERING",
+      "team_size": "6"
+    },
+    {
+      "team_id": "TEAM-10",
+      "task_type": "SECURITY",
+      "team_size": "6"
+    }
+  ],
+  "stands": [
+    {
+      "stand_id": "G01",
+      "stand_type": "CONTACT",
+      "pier": "DOM_A",
+      "max_size_code": "C",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "155",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "G02",
+      "stand_type": "CONTACT",
+      "pier": "DOM_A",
+      "max_size_code": "C",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "190",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "G03",
+      "stand_type": "CONTACT",
+      "pier": "DOM_A",
+      "max_size_code": "C",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "225",
+      "preferred_airline": "KV"
+    },
+    {
+      "stand_id": "G04",
+      "stand_type": "CONTACT",
+      "pier": "DOM_A",
+      "max_size_code": "E",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "260",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "G05",
+      "stand_type": "CONTACT",
+      "pier": "DOM_A",
+      "max_size_code": "C",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "295",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "G06",
+      "stand_type": "CONTACT",
+      "pier": "DOM_A",
+      "max_size_code": "C",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "330",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "G07",
+      "stand_type": "CONTACT",
+      "pier": "DOM_A",
+      "max_size_code": "E",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "365",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "G08",
+      "stand_type": "CONTACT",
+      "pier": "DOM_A",
+      "max_size_code": "C",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "400",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "G09",
+      "stand_type": "CONTACT",
+      "pier": "DOM_B",
+      "max_size_code": "C",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "155",
+      "preferred_airline": "DW"
+    },
+    {
+      "stand_id": "G10",
+      "stand_type": "CONTACT",
+      "pier": "DOM_B",
+      "max_size_code": "C",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "190",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "G11",
+      "stand_type": "CONTACT",
+      "pier": "DOM_B",
+      "max_size_code": "C",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "225",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "G12",
+      "stand_type": "CONTACT",
+      "pier": "DOM_B",
+      "max_size_code": "E",
+      "swing_gate": "true",
+      "aerobridge": "true",
+      "walking_distance_m": "900",
+      "preferred_airline": "NX"
+    },
+    {
+      "stand_id": "G13",
+      "stand_type": "CONTACT",
+      "pier": "INTL",
+      "max_size_code": "E",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "155",
+      "preferred_airline": "SB"
+    },
+    {
+      "stand_id": "G14",
+      "stand_type": "CONTACT",
+      "pier": "INTL",
+      "max_size_code": "C",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "190",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "G15",
+      "stand_type": "CONTACT",
+      "pier": "INTL",
+      "max_size_code": "E",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "225",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "G16",
+      "stand_type": "CONTACT",
+      "pier": "INTL",
+      "max_size_code": "C",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "260",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "G17",
+      "stand_type": "CONTACT",
+      "pier": "INTL",
+      "max_size_code": "E",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "295",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "G18",
+      "stand_type": "CONTACT",
+      "pier": "INTL",
+      "max_size_code": "C",
+      "swing_gate": "false",
+      "aerobridge": "true",
+      "walking_distance_m": "330",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "R01",
+      "stand_type": "REMOTE",
+      "pier": "REMOTE",
+      "max_size_code": "E",
+      "swing_gate": "false",
+      "aerobridge": "false",
+      "walking_distance_m": "0",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "R02",
+      "stand_type": "REMOTE",
+      "pier": "REMOTE",
+      "max_size_code": "E",
+      "swing_gate": "false",
+      "aerobridge": "false",
+      "walking_distance_m": "0",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "R03",
+      "stand_type": "REMOTE",
+      "pier": "REMOTE",
+      "max_size_code": "E",
+      "swing_gate": "false",
+      "aerobridge": "false",
+      "walking_distance_m": "0",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "R04",
+      "stand_type": "REMOTE",
+      "pier": "REMOTE",
+      "max_size_code": "C",
+      "swing_gate": "false",
+      "aerobridge": "false",
+      "walking_distance_m": "0",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "R05",
+      "stand_type": "REMOTE",
+      "pier": "REMOTE",
+      "max_size_code": "C",
+      "swing_gate": "false",
+      "aerobridge": "false",
+      "walking_distance_m": "0",
+      "preferred_airline": ""
+    },
+    {
+      "stand_id": "R06",
+      "stand_type": "REMOTE",
+      "pier": "REMOTE",
+      "max_size_code": "C",
+      "swing_gate": "false",
+      "aerobridge": "false",
+      "walking_distance_m": "0",
+      "preferred_airline": ""
+    }
+  ],
+  "task_durations": [
+    {
+      "task": "DEBOARDING",
+      "duration_min": "15",
+      "team_type": "PAX_HANDLING",
+      "predecessors": "",
+      "international_only": "false"
+    },
+    {
+      "task": "CLEANING",
+      "duration_min": "20",
+      "team_type": "CLEANING",
+      "predecessors": "DEBOARDING",
+      "international_only": "false"
+    },
+    {
+      "task": "FUELLING",
+      "duration_min": "25",
+      "team_type": "FUELLING",
+      "predecessors": "DEBOARDING",
+      "international_only": "false"
+    },
+    {
+      "task": "CATERING",
+      "duration_min": "20",
+      "team_type": "CATERING",
+      "predecessors": "DEBOARDING",
+      "international_only": "false"
+    },
+    {
+      "task": "SECURITY_CHECK",
+      "duration_min": "15",
+      "team_type": "SECURITY",
+      "predecessors": "CLEANING;FUELLING;CATERING",
+      "international_only": "true"
+    },
+    {
+      "task": "BOARDING",
+      "duration_min": "25",
+      "team_type": "PAX_HANDLING",
+      "predecessors": "CLEANING;FUELLING;CATERING;SECURITY_CHECK",
+      "international_only": "false"
+    }
+  ]
+}

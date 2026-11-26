@@ -1,0 +1,2934 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AERO-OPS 121 — Airport Operations Control Centre & Surveillance</title>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            aero: {
+              bg: '#050706',
+              surface: '#090D0A',
+              sidebar: '#080B09',
+              card: '#0D120F',
+              panel: '#111914',
+              border: '#1D2B22',
+              borderLight: '#26382D',
+              green: '#22C55E',
+              emerald: '#10B981',
+              highlight: '#4ADE80',
+              mutedGreen: '#166534',
+              text: '#F4F7F4',
+              secondary: '#9CA99F',
+              muted: '#647268',
+              statusSuccess: '#22C55E',
+              statusWarning: '#F59E0B',
+              statusCritical: '#EF4444',
+              statusInfo: '#A3B3A8',
+              statusActive: '#4ADE80'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
+          },
+          boxShadow: {
+            'emerald-glow': '0 0 16px -2px rgba(34, 197, 94, 0.22)',
+            'emerald-subtle': '0 0 8px 0 rgba(16, 185, 129, 0.12)',
+            'card-lift': '0 8px 24px -4px rgba(0, 0, 0, 0.65)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Aviation Dark & Emerald Scrollbars */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #050706; }
+    ::-webkit-scrollbar-thumb { background: #1D2B22; border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: #166534; }
+
+    /* Custom Emerald Slider */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: #111914;
+      height: 6px;
+      border-radius: 3px;
+      border: 1px solid #1D2B22;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #22C55E;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+      border: 2px solid #050706;
+      transition: transform 0.15s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background: #4ADE80;
+    }
+
+    /* Active Nav Styling */
+    .nav-item-active {
+      background: rgba(16, 185, 129, 0.1) !important;
+      color: #F4F7F4 !important;
+      border-left: 3px solid #22C55E !important;
+      box-shadow: inset 4px 0 12px -2px rgba(34, 197, 94, 0.15);
+    }
+    .nav-item-active i {
+      color: #22C55E !important;
+    }
+
+    /* Restrained Glass & Card styling */
+    .aero-card {
+      background-color: #0D120F;
+      border: 1px solid #1D2B22;
+      border-radius: 8px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    }
+    .aero-card:hover {
+      border-color: #26382D;
+    }
+
+    /* Radar scanline animation */
+    .scan-line {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 3px, 6px 100%;
+      opacity: 0.4;
+    }
+  </style>
+</head>
+<body class="bg-[#050706] text-[#F4F7F4] font-sans antialiased min-h-screen flex flex-col selection:bg-aero-green selection:text-black">
+
+  <!-- ===================================================================== -->
+  <!-- TOP CONTROL HEADER -->
+  <!-- ===================================================================== -->
+  <header class="bg-[#080B09] border-b border-aero-border sticky top-0 z-40 px-3 sm:px-5 py-2.5 shadow-md">
+    <div class="flex items-center justify-between gap-3">
+      
+      <!-- Brand & Mobile Menu Toggle -->
+      <div class="flex items-center space-x-3">
+        <button onclick="toggleMobileSidebar()" class="lg:hidden p-1.5 rounded-md text-aero-secondary hover:text-white hover:bg-aero-panel focus:outline-none">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-md bg-[#0D120F] border border-aero-green/40 flex items-center justify-center text-aero-green shadow-emerald-subtle">
+            <i data-lucide="radar" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-bold text-sm tracking-wide text-white uppercase">AERO-OPS 121</span>
+              <span class="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-[#111914] text-aero-green border border-aero-mutedGreen">
+                <span class="w-1.5 h-1.5 rounded-full bg-aero-green animate-pulse"></span>
+                <span>AOCC LIVE</span>
+              </span>
+            </div>
+            <p class="text-[10px] text-aero-secondary tracking-tight hidden sm:block">Airport Operations Control Centre & Surveillance • PS-121 Hub</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Telemetry: UTC Clock & System Health -->
+      <div class="hidden md:flex items-center space-x-4 text-xs font-mono text-aero-secondary bg-[#0D120F] px-3.5 py-1.5 rounded-md border border-aero-border">
+        <div class="flex items-center space-x-1.5">
+          <i data-lucide="calendar" class="w-3.5 h-3.5 text-aero-emerald"></i>
+          <span class="text-white font-medium">2026-10-14</span>
+        </div>
+        <span class="text-aero-muted">|</span>
+        <div class="flex items-center space-x-1.5">
+          <i data-lucide="clock" class="w-3.5 h-3.5 text-aero-emerald"></i>
+          <span id="headerUtcClock" class="text-aero-green font-semibold">12:00:00 UTC</span>
+        </div>
+        <span class="text-aero-muted">|</span>
+        <div class="flex items-center space-x-1.5 text-[11px]">
+          <span class="w-1.5 h-1.5 rounded-full bg-aero-green"></span>
+          <span class="text-aero-secondary">SURVEILLANCE: <span class="text-aero-highlight font-semibold">ONLINE</span></span>
+        </div>
+      </div>
+
+      <!-- Primary Action Buttons & User Profile -->
+      <div class="flex items-center space-x-2">
+        <!-- Step Event -->
+        <button onclick="stepCommand()" class="px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium bg-[#111914] text-aero-highlight border border-aero-border hover:border-aero-green hover:bg-[#16221A] transition flex items-center space-x-1.5 shadow-sm" title="Step next single chronological event">
+          <i data-lucide="skip-forward" class="w-3.5 h-3.5 text-aero-green"></i>
+          <span class="hidden sm:inline">STEP EVENT</span>
+        </button>
+
+        <!-- Auto-Run Day -->
+        <button onclick="runAllCommands()" class="px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-semibold bg-aero-green text-black hover:bg-aero-highlight transition shadow-emerald-glow flex items-center space-x-1.5" title="Simulate entire operational day (98 events)">
+          <i data-lucide="play" class="w-3.5 h-3.5 fill-black"></i>
+          <span>AUTO-RUN DAY</span>
+        </button>
+
+        <!-- Reset Simulation -->
+        <button onclick="resetSimulation()" class="p-1.5 sm:px-2.5 sm:py-1.5 rounded-md text-xs font-medium bg-[#0D120F] text-aero-muted hover:text-red-400 border border-aero-border hover:border-red-900/80 transition flex items-center space-x-1.5" title="Reset Simulation to Initial Baseline">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+          <span class="hidden xl:inline">RESET</span>
+        </button>
+
+        <div class="h-6 w-px bg-aero-border mx-1 hidden sm:block"></div>
+
+        <!-- Duty Officer Profile Tag -->
+        <div class="hidden sm:flex items-center space-x-2 pl-1">
+          <div class="w-7 h-7 rounded-full bg-aero-panel border border-aero-border flex items-center justify-center text-xs font-bold text-aero-green font-mono">
+            OP
+          </div>
+          <div class="text-left hidden xl:block">
+            <span class="text-xs font-medium text-white block leading-tight">Duty Officer</span>
+            <span class="text-[10px] text-aero-secondary font-mono leading-tight">AOCC Controller</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN SHELL: SIDEBAR + CONTENT AREA -->
+  <!-- ===================================================================== -->
+  <div class="flex-1 flex overflow-hidden">
+    
+    <!-- DESKTOP SIDEBAR -->
+    <aside id="desktopSidebar" class="hidden lg:flex flex-col w-64 bg-[#080B09] border-r border-aero-border select-none shrink-0 transition-all duration-300">
+      <div class="p-3 text-[11px] font-mono uppercase text-aero-muted font-semibold tracking-wider flex items-center justify-between">
+        <span>Operations Modules</span>
+        <span class="text-[9px] px-1 py-0.5 rounded bg-aero-card border border-aero-border text-aero-secondary">9 Active</span>
+      </div>
+
+      <nav class="flex-1 px-2 space-y-1 overflow-y-auto">
+        <!-- 1. Command Center -->
+        <button onclick="switchTab('overview')" id="navBtn-overview" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-medium text-aero-secondary hover:text-white hover:bg-aero-card transition group border-l-2 border-transparent">
+          <i data-lucide="layout-grid" class="w-4 h-4 text-aero-secondary group-hover:text-aero-green"></i>
+          <span class="truncate">Command Center</span>
+        </button>
+
+        <!-- 2. Surveillance & Radar (NEW) -->
+        <button onclick="switchTab('surveillance')" id="navBtn-surveillance" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-medium text-aero-secondary hover:text-white hover:bg-aero-card transition group border-l-2 border-transparent">
+          <i data-lucide="video" class="w-4 h-4 text-aero-secondary group-hover:text-aero-green"></i>
+          <span class="truncate flex items-center justify-between w-full">
+            <span>Surveillance Workspace</span>
+            <span class="text-[9px] font-mono px-1 rounded bg-[#111914] text-aero-highlight border border-aero-mutedGreen">LIVE</span>
+          </span>
+        </button>
+
+        <!-- 3. Flight Ops Board -->
+        <button onclick="switchTab('flights')" id="navBtn-flights" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-medium text-aero-secondary hover:text-white hover:bg-aero-card transition group border-l-2 border-transparent">
+          <i data-lucide="plane" class="w-4 h-4 text-aero-secondary group-hover:text-aero-green"></i>
+          <span class="truncate">Flight Ops Board</span>
+        </button>
+
+        <!-- 4. Runway Slots -->
+        <button onclick="switchTab('runway')" id="navBtn-runway" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-medium text-aero-secondary hover:text-white hover:bg-aero-card transition group border-l-2 border-transparent">
+          <i data-lucide="sliders" class="w-4 h-4 text-aero-secondary group-hover:text-aero-green"></i>
+          <span class="truncate">Runway Slots (15m)</span>
+        </button>
+
+        <!-- 5. Gates & Stands -->
+        <button onclick="switchTab('gates')" id="navBtn-gates" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-medium text-aero-secondary hover:text-white hover:bg-aero-card transition group border-l-2 border-transparent">
+          <i data-lucide="door-closed" class="w-4 h-4 text-aero-secondary group-hover:text-aero-green"></i>
+          <span class="truncate">Gates & Stands Matrix</span>
+        </button>
+
+        <!-- 6. Turnaround Tasks -->
+        <button onclick="switchTab('turnaround')" id="navBtn-turnaround" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-medium text-aero-secondary hover:text-white hover:bg-aero-card transition group border-l-2 border-transparent">
+          <i data-lucide="wrench" class="w-4 h-4 text-aero-secondary group-hover:text-aero-green"></i>
+          <span class="truncate">Turnaround Tasks</span>
+        </button>
+
+        <!-- 7. Disruptions Simulator -->
+        <button onclick="switchTab('simulator')" id="navBtn-simulator" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-medium text-aero-secondary hover:text-white hover:bg-aero-card transition group border-l-2 border-transparent">
+          <i data-lucide="activity" class="w-4 h-4 text-aero-secondary group-hover:text-aero-green"></i>
+          <span class="truncate">Disruptions Simulator</span>
+        </button>
+
+        <!-- 8. Billing & Sandbox -->
+        <button onclick="switchTab('charges')" id="navBtn-charges" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-medium text-aero-secondary hover:text-white hover:bg-aero-card transition group border-l-2 border-transparent">
+          <i data-lucide="receipt" class="w-4 h-4 text-aero-secondary group-hover:text-aero-green"></i>
+          <span class="truncate">Billing & What-If</span>
+        </button>
+
+        <!-- 9. Custom Flight Planner -->
+        <button onclick="switchTab('customFlight')" id="navBtn-customFlight" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-md text-xs font-medium text-aero-secondary hover:text-white hover:bg-aero-card transition group border-l-2 border-transparent">
+          <i data-lucide="compass" class="w-4 h-4 text-aero-secondary group-hover:text-aero-green"></i>
+          <span class="truncate">Custom Flight Planner</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Footer Telemetry -->
+      <div class="p-3 border-t border-aero-border bg-[#050706]">
+        <div class="flex items-center justify-between text-[11px] font-mono text-aero-secondary mb-1">
+          <span>EVENT PROGRESS</span>
+          <span id="sidebarProgressRatio" class="text-aero-green font-semibold">0 / 98</span>
+        </div>
+        <div class="w-full bg-[#111914] h-1.5 rounded-full overflow-hidden border border-aero-border">
+          <div id="sidebarProgressBar" class="h-full bg-aero-green transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MOBILE SLIDE-OUT DRAWER -->
+    <div id="mobileSidebarBackdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm lg:hidden hidden transition-opacity"></div>
+    <div id="mobileSidebar" class="fixed top-0 left-0 bottom-0 z-50 w-72 bg-[#080B09] border-r border-aero-border flex flex-col transform -translate-x-full transition-transform duration-300 lg:hidden">
+      <div class="p-4 border-b border-aero-border flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div class="w-7 h-7 rounded bg-aero-card border border-aero-green/40 flex items-center justify-center text-aero-green">
+            <i data-lucide="radar" class="w-4 h-4"></i>
+          </div>
+          <span class="font-bold text-sm text-white">AERO-OPS 121</span>
+        </div>
+        <button onclick="toggleMobileSidebar()" class="text-aero-secondary hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <nav id="mobileNavContainer" class="flex-1 p-3 space-y-1.5 overflow-y-auto">
+        <!-- Rendered via JS mirroring desktop -->
+      </nav>
+    </div>
+
+    <!-- MAIN SCROLLABLE CONTENT AREA -->
+    <main class="flex-1 bg-[#050706] overflow-y-auto p-3 sm:p-5 lg:p-6 relative">
+
+      <!-- TOAST NOTIFICATION CONTAINER -->
+      <div id="toastContainer" class="fixed top-16 right-4 z-50 space-y-2 pointer-events-none max-w-sm w-full"></div>
+
+      <!-- =================================================================== -->
+      <!-- TAB 1: COMMAND CENTER (REORGANIZED WITH VISUAL INTELLIGENCE) -->
+      <!-- =================================================================== -->
+      <section id="view-overview" class="tab-view space-y-4">
+        
+        <!-- Section Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-aero-border pb-3">
+          <div>
+            <h1 class="text-base sm:text-lg font-bold text-white tracking-wide flex items-center space-x-2">
+              <i data-lucide="layout-grid" class="w-4 h-4 text-aero-green"></i>
+              <span>Airport Operations Command Center</span>
+            </h1>
+            <p class="text-xs text-aero-secondary">Live multi-perspective CCTV surveillance, tactical aircraft radar, airport movement map, and KPIs.</p>
+          </div>
+          <div class="flex items-center space-x-2 text-xs font-mono">
+            <span class="text-aero-secondary">Operations Day:</span>
+            <span class="px-2 py-0.5 rounded bg-aero-card border border-aero-border text-white">2026-10-14</span>
+          </div>
+        </div>
+
+        <!-- 1. TOP: 7 HIGH-DENSITY KPI CARDS -->
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          <!-- Total Flights -->
+          <div class="aero-card p-3 shadow-sm hover:border-aero-green/40">
+            <div class="flex items-center justify-between text-aero-secondary text-[11px] mb-1">
+              <span class="uppercase tracking-wider">Total Flights</span>
+              <i data-lucide="plane" class="w-3.5 h-3.5 text-aero-green"></i>
+            </div>
+            <div id="kpi-total-flights" class="text-xl sm:text-2xl font-bold font-mono text-white">--</div>
+            <div class="text-[10px] text-aero-secondary mt-1 truncate">
+              <span id="kpi-active-flights" class="text-aero-highlight font-semibold">--</span> active mvmts
+            </div>
+          </div>
+
+          <!-- Active Movements -->
+          <div class="aero-card p-3 shadow-sm hover:border-aero-green/40">
+            <div class="flex items-center justify-between text-aero-secondary text-[11px] mb-1">
+              <span class="uppercase tracking-wider">Planned Mvmts</span>
+              <i data-lucide="move" class="w-3.5 h-3.5 text-aero-green"></i>
+            </div>
+            <div id="kpi-active-movements" class="text-xl sm:text-2xl font-bold font-mono text-aero-highlight">--</div>
+            <div class="text-[10px] text-aero-secondary mt-1 truncate">
+              ARR & DEP rotations
+            </div>
+          </div>
+
+          <!-- Delayed Flights -->
+          <div class="aero-card p-3 shadow-sm hover:border-amber-500/40">
+            <div class="flex items-center justify-between text-aero-secondary text-[11px] mb-1">
+              <span class="uppercase tracking-wider">Delays</span>
+              <i data-lucide="clock-alert" class="w-3.5 h-3.5 text-aero-statusWarning"></i>
+            </div>
+            <div id="kpi-delayed-flights" class="text-xl sm:text-2xl font-bold font-mono text-aero-statusWarning">--</div>
+            <div class="text-[10px] text-aero-secondary mt-1 truncate">
+              <span class="text-amber-300 font-semibold">Priority 0</span> slot priority
+            </div>
+          </div>
+
+          <!-- Cancellations -->
+          <div class="aero-card p-3 shadow-sm hover:border-red-500/40">
+            <div class="flex items-center justify-between text-aero-secondary text-[11px] mb-1">
+              <span class="uppercase tracking-wider">Cancelled</span>
+              <i data-lucide="ban" class="w-3.5 h-3.5 text-aero-statusCritical"></i>
+            </div>
+            <div id="kpi-cancelled-flights" class="text-xl sm:text-2xl font-bold font-mono text-aero-statusCritical">--</div>
+            <div class="text-[10px] text-aero-secondary mt-1 truncate">
+              <span id="kpi-diverted-flights" class="text-purple-300 font-semibold">--</span> diverted
+            </div>
+          </div>
+
+          <!-- Gate Occupancy -->
+          <div class="aero-card p-3 shadow-sm hover:border-aero-green/40">
+            <div class="flex items-center justify-between text-aero-secondary text-[11px] mb-1">
+              <span class="uppercase tracking-wider">Gate Occ.</span>
+              <i data-lucide="door-closed" class="w-3.5 h-3.5 text-aero-green"></i>
+            </div>
+            <div id="kpi-gate-occupancy" class="text-xl sm:text-2xl font-bold font-mono text-aero-green">--%</div>
+            <div class="text-[10px] text-aero-secondary mt-1 truncate">
+              <span id="kpi-active-stands" class="text-white font-semibold">--</span> / 24 stands
+            </div>
+          </div>
+
+          <!-- Peak Runway Movements -->
+          <div class="aero-card p-3 shadow-sm hover:border-aero-green/40">
+            <div class="flex items-center justify-between text-aero-secondary text-[11px] mb-1">
+              <span class="uppercase tracking-wider">Runway Peak</span>
+              <i data-lucide="gauge" class="w-3.5 h-3.5 text-aero-highlight"></i>
+            </div>
+            <div id="kpi-peak-runway" class="text-xl sm:text-2xl font-bold font-mono text-white">--/12</div>
+            <div class="text-[10px] text-aero-secondary mt-1 truncate">
+              <span id="kpi-saturated-bins" class="text-amber-400 font-semibold">--</span> saturated bins
+            </div>
+          </div>
+
+          <!-- Accrued Revenue -->
+          <div class="aero-card p-3 shadow-sm hover:border-aero-green/40 col-span-2 sm:col-span-1">
+            <div class="flex items-center justify-between text-aero-secondary text-[11px] mb-1">
+              <span class="uppercase tracking-wider">Accrued Rev</span>
+              <i data-lucide="indian-rupee" class="w-3.5 h-3.5 text-aero-green"></i>
+            </div>
+            <div id="kpi-revenue" class="text-lg sm:text-xl font-bold font-mono text-aero-highlight truncate">₹ --</div>
+            <div class="text-[10px] text-aero-secondary mt-1 truncate">
+              Aeronautical charges
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. MIDDLE: LIVE RUNWAY CAMERA & INTERACTIVE RADAR SCOPE -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          
+          <!-- Live Runway & Apron Camera Feed (7 cols) -->
+          <div class="lg:col-span-7 aero-card p-4 flex flex-col justify-between overflow-hidden relative group">
+            <div class="flex items-center justify-between mb-2 pb-2 border-b border-aero-border text-xs font-mono">
+              <div class="flex items-center space-x-2">
+                <span class="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-950/80 text-red-400 border border-red-800 animate-pulse">
+                  <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                  <span>SIMULATED FEED</span>
+                </span>
+                <span id="camHeroTitle" class="text-white font-bold">CAM-01 • RUNWAY 09/27 ACTIVE THRESHOLD</span>
+              </div>
+              <div class="flex items-center space-x-2 text-aero-secondary text-[11px]">
+                <button onclick="cycleCameraHero()" class="hover:text-aero-green transition px-2 py-0.5 rounded bg-[#111914] border border-aero-border flex items-center space-x-1">
+                  <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                  <span>Switch Cam</span>
+                </button>
+                <button onclick="toggleCameraFullscreen()" class="hover:text-white transition p-1" title="Fullscreen">
+                  <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Video/Image 16:9 Container with HUD Overlay -->
+            <div id="camHeroContainer" class="relative w-full aspect-video rounded-md overflow-hidden bg-black border border-aero-border shadow-inner">
+              <img id="camHeroImage" src="https://images.unsplash.com/photo-1520437358207-323b43b50729?auto=format&fit=crop&w=1200&q=80" alt="Runway Camera Surveillance" class="w-full h-full object-cover filter contrast-[1.08] brightness-[0.88] transition duration-500">
+              
+              <!-- Dark HUD Translucent Overlay -->
+              <div class="scan-line"></div>
+              
+              <!-- HUD Top Left -->
+              <div class="absolute top-2.5 left-3 font-mono text-[10px] text-aero-highlight bg-black/75 px-2 py-1 rounded border border-aero-border/80 backdrop-blur-sm pointer-events-none space-y-0.5">
+                <div class="flex items-center space-x-1.5">
+                  <span class="text-white font-bold" id="camHeroOverlayId">CAM-01 [ACTIVE]</span>
+                  <span class="text-aero-muted">•</span>
+                  <span id="camHeroOverlayRwy" class="text-aero-green">RWY 09/27</span>
+                </div>
+                <div class="text-[9px] text-aero-secondary" id="camHeroOverlayDesc">Touchdown zone & rapid exit TWY A surveillance</div>
+              </div>
+
+              <!-- HUD Top Right (Time & Frame) -->
+              <div class="absolute top-2.5 right-3 font-mono text-[10px] text-right text-aero-secondary bg-black/75 px-2 py-1 rounded border border-aero-border/80 backdrop-blur-sm pointer-events-none">
+                <span id="camHeroOverlayTime" class="text-white font-bold">2026-10-14 12:00:00 UTC</span>
+                <span class="block text-[9px] text-aero-green">30.0 FPS • 1080P PRO-RES</span>
+              </div>
+
+              <!-- HUD Center Crosshair -->
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
+                <div class="w-12 h-12 border border-aero-green/60 rounded-full flex items-center justify-center">
+                  <div class="w-1 h-1 bg-aero-green rounded-full"></div>
+                </div>
+              </div>
+
+              <!-- HUD Bottom Bar (Weather & Perspective Switcher) -->
+              <div class="absolute bottom-2.5 left-3 right-3 flex flex-wrap items-center justify-between gap-2 bg-black/85 p-2 rounded border border-aero-border/80 backdrop-blur-sm font-mono text-[10px]">
+                <div class="flex items-center space-x-3 text-aero-secondary">
+                  <span>VIS: <span class="text-white font-semibold">10 KM</span></span>
+                  <span>RVR: <span class="text-aero-highlight font-semibold">2000M</span></span>
+                  <span>WIND: <span class="text-white font-semibold">270° / 12KT</span></span>
+                  <span class="hidden sm:inline">QNH: <span class="text-white font-semibold">1013 HPA</span></span>
+                </div>
+                <div class="flex items-center space-x-1" id="camHeroButtonList">
+                  <button onclick="selectCameraFeed(0)" class="cam-switch-btn px-1.5 py-0.5 rounded bg-aero-green text-black font-bold text-[9px]">RWY 09/27</button>
+                  <button onclick="selectCameraFeed(1)" class="cam-switch-btn px-1.5 py-0.5 rounded bg-[#111914] text-aero-secondary hover:text-white text-[9px]">APRON</button>
+                  <button onclick="selectCameraFeed(2)" class="cam-switch-btn px-1.5 py-0.5 rounded bg-[#111914] text-aero-secondary hover:text-white text-[9px]">DOM T1</button>
+                  <button onclick="selectCameraFeed(3)" class="cam-switch-btn px-1.5 py-0.5 rounded bg-[#111914] text-aero-secondary hover:text-white text-[9px]">INTL T2</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notice Footer -->
+            <div class="text-[10px] font-mono text-aero-muted flex items-center justify-between mt-2 pt-2 border-t border-aero-border/60">
+              <span>* DEMO CAMERA FEED: Curated high-definition aviation imagery with simulated live HUD overlay.</span>
+              <button onclick="switchTab('surveillance')" class="text-aero-green hover:underline">Open Quad-Cam Grid &rarr;</button>
+            </div>
+          </div>
+
+          <!-- Interactive 360° Aircraft Radar Scope (5 cols) -->
+          <div class="lg:col-span-5 aero-card p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-2 pb-2 border-b border-aero-border text-xs font-mono">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="radar" class="w-4 h-4 text-aero-green animate-spin" style="animation-duration: 8s;"></i>
+                <span class="text-white font-bold">AIRCRAFT RADAR SCOPE (PPI)</span>
+              </div>
+              <div class="flex items-center space-x-1">
+                <select id="radarRangeSelect" onchange="updateRadarRange()" class="bg-[#050706] border border-aero-border text-aero-highlight py-0.5 px-2 rounded text-[10px] font-mono">
+                  <option value="25">25 NM</option>
+                  <option value="50" selected>50 NM</option>
+                  <option value="100">100 NM</option>
+                </select>
+                <button onclick="toggleRadarSweep()" id="radarSweepToggleBtn" class="px-2 py-0.5 rounded bg-[#111914] text-aero-secondary hover:text-white border border-aero-border text-[10px] font-mono">
+                  Pause
+                </button>
+              </div>
+            </div>
+
+            <!-- Circular Canvas Radar Display -->
+            <div class="relative w-full aspect-square flex items-center justify-center bg-[#050706] rounded-md border border-aero-border overflow-hidden">
+              <canvas id="radarCanvas" width="480" height="480" class="w-full h-full cursor-crosshair"></canvas>
+              
+              <!-- Radar Target Info Box (Hover/Click) -->
+              <div id="radarTargetInfo" class="hidden absolute top-2 left-2 bg-[#090D0A]/90 border border-aero-green/60 p-2 rounded font-mono text-[10px] shadow-lg max-w-[200px] pointer-events-none backdrop-blur-sm z-20">
+                <div class="flex items-center justify-between text-white font-bold border-b border-aero-border pb-1 mb-1">
+                  <span id="rtCallsign">FLT-XXXX</span>
+                  <span id="rtDir" class="text-aero-green">ARR</span>
+                </div>
+                <div class="space-y-0.5 text-aero-secondary">
+                  <div>ALT: <span id="rtAlt" class="text-white font-bold">FL240</span></div>
+                  <div>SPD: <span id="rtSpd" class="text-white">280 KT</span></div>
+                  <div>BRG/RNG: <span id="rtCoord" class="text-aero-highlight">270° / 24NM</span></div>
+                  <div>AC: <span id="rtAc" class="text-white">A320 (C)</span></div>
+                </div>
+              </div>
+
+              <!-- Radar Scale Indicator -->
+              <div class="absolute bottom-2 left-2 text-[9px] font-mono text-aero-muted bg-black/60 px-1.5 py-0.5 rounded border border-aero-border/40 pointer-events-none">
+                <span id="radarScaleLabel">SCOPE RANGE: 50 NM</span>
+              </div>
+
+              <!-- Filter Selector Overlays -->
+              <div class="absolute bottom-2 right-2 flex space-x-1 font-mono text-[9px] pointer-events-auto">
+                <button onclick="setRadarFilter('ALL')" id="rfBtn-ALL" class="px-1.5 py-0.5 rounded bg-aero-green text-black font-bold">ALL</button>
+                <button onclick="setRadarFilter('ARR')" id="rfBtn-ARR" class="px-1.5 py-0.5 rounded bg-[#111914] text-aero-secondary hover:text-white border border-aero-border">ARR</button>
+                <button onclick="setRadarFilter('DEP')" id="rfBtn-DEP" class="px-1.5 py-0.5 rounded bg-[#111914] text-aero-secondary hover:text-white border border-aero-border">DEP</button>
+              </div>
+            </div>
+
+            <div class="text-[10px] font-mono text-aero-secondary flex items-center justify-between mt-2 pt-2 border-t border-aero-border/60">
+              <span class="truncate">* SIMULATED RADAR: Tracks derived from operations day dataset. Click blip for dossier.</span>
+              <span id="radarActiveCount" class="text-aero-green font-bold shrink-0 ml-2">-- Tracks</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 3. LOWER: AIRPORT TERMINAL MAP & ANALYTICAL CHARTS -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          
+          <!-- Interactive Top-Down Airport Ground Movement Map (7 cols) -->
+          <div class="lg:col-span-7 aero-card p-4 flex flex-col justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2 pb-2 border-b border-aero-border text-xs font-mono">
+              <div>
+                <h2 class="text-xs sm:text-sm font-bold text-white flex items-center space-x-2">
+                  <i data-lucide="map" class="w-4 h-4 text-aero-green"></i>
+                  <span>Airport Ground Movement & Stand Occupancy Map</span>
+                </h2>
+                <p class="text-[11px] text-aero-secondary">Runways 09L/27R & 09R/27L, rapid-exit taxiways, and all 24 stands with live docked aircraft.</p>
+              </div>
+
+              <!-- Map Controls & Layer Toggles -->
+              <div class="flex items-center space-x-1.5">
+                <button onclick="resetMapZoom()" class="px-2 py-0.5 rounded bg-[#111914] text-aero-secondary hover:text-white border border-aero-border text-[10px]" title="Reset View">
+                  Reset
+                </button>
+                <button onclick="toggleMapLayer('aircraft')" id="mapToggleAircraftBtn" class="px-2 py-0.5 rounded bg-aero-green text-black font-bold text-[10px]">
+                  Aircraft
+                </button>
+                <button onclick="toggleMapLayer('labels')" id="mapToggleLabelsBtn" class="px-2 py-0.5 rounded bg-[#111914] text-aero-secondary hover:text-white border border-aero-border text-[10px]">
+                  Tags
+                </button>
+              </div>
+            </div>
+
+            <!-- SVG Map Canvas -->
+            <div id="airportMapContainer" class="relative w-full aspect-[16/9] bg-[#050706] rounded-md border border-aero-border overflow-hidden select-none">
+              <svg id="airportMapSvg" viewBox="0 0 1000 560" class="w-full h-full cursor-grab">
+                <defs>
+                  <!-- Runway texture / line styling -->
+                  <pattern id="rwyStripe" width="20" height="4" patternUnits="userSpaceOnUse">
+                    <rect width="10" height="4" fill="#F4F7F4" opacity="0.8"/>
+                  </pattern>
+                </defs>
+
+                <!-- Ground apron surfaces -->
+                <rect width="1000" height="560" fill="#070A08"/>
+                <polygon points="100,120 900,120 900,440 100,440" fill="#090E0B"/>
+
+                <!-- Main Runway 09L/27R (3,800m) -->
+                <rect x="50" y="60" width="900" height="38" rx="2" fill="#111914" stroke="#1D2B22" stroke-width="1.5"/>
+                <!-- Runway Centerline -->
+                <line x1="120" y1="79" x2="880" y2="79" stroke="#F4F7F4" stroke-width="1.5" stroke-dasharray="16,12" opacity="0.75"/>
+                <!-- Piano Keys Thresholds -->
+                <rect x="60" y="64" width="30" height="30" fill="url(#rwyStripe)"/>
+                <rect x="910" y="64" width="30" height="30" fill="url(#rwyStripe)"/>
+                <text x="100" y="84" fill="#F4F7F4" font-family="JetBrains Mono" font-size="11" font-weight="bold">09L</text>
+                <text x="875" y="84" fill="#F4F7F4" font-family="JetBrains Mono" font-size="11" font-weight="bold">27R</text>
+
+                <!-- Secondary Runway 09R/27L (3,200m) -->
+                <rect x="120" y="470" width="760" height="32" rx="2" fill="#111914" stroke="#1D2B22" stroke-width="1.5"/>
+                <line x1="180" y1="486" x2="820" y2="486" stroke="#F4F7F4" stroke-width="1.5" stroke-dasharray="14,10" opacity="0.6"/>
+                <text x="160" y="491" fill="#F4F7F4" font-family="JetBrains Mono" font-size="10" font-weight="bold">09R</text>
+                <text x="825" y="491" fill="#F4F7F4" font-family="JetBrains Mono" font-size="10" font-weight="bold">27L</text>
+
+                <!-- Taxiway Network -->
+                <!-- Taxiway Alpha (Parallel to 09L) -->
+                <path d="M 80,115 L 920,115" stroke="#10B981" stroke-width="2" fill="none" opacity="0.65"/>
+                <!-- Taxiway Bravo (Parallel lower) -->
+                <path d="M 140,435 L 860,435" stroke="#10B981" stroke-width="1.5" fill="none" opacity="0.5"/>
+                <!-- High-Speed Exits & Connectors -->
+                <path d="M 220,79 L 260,115 L 260,340" stroke="#10B981" stroke-width="1.5" fill="none" opacity="0.5"/>
+                <path d="M 480,79 L 520,115 L 520,435 L 500,470" stroke="#10B981" stroke-width="1.5" fill="none" opacity="0.5"/>
+                <path d="M 740,79 L 770,115 L 770,360" stroke="#10B981" stroke-width="1.5" fill="none" opacity="0.5"/>
+
+                <!-- Terminal 1 Building Concourse -->
+                <polygon points="280,180 580,180 580,310 280,310" fill="#0C130E" stroke="#1D2B22" stroke-width="1.5"/>
+                <text x="430" y="245" fill="#9CA99F" font-family="JetBrains Mono" font-size="12" font-weight="bold" text-anchor="middle" opacity="0.7">TERMINAL 1 (DOMESTIC)</text>
+                <text x="430" y="260" fill="#647268" font-family="JetBrains Mono" font-size="9" text-anchor="middle">PIERS DOM_A & DOM_B</text>
+
+                <!-- Terminal 2 International Pier -->
+                <polygon points="620,190 940,190 940,290 620,290" fill="#0C130E" stroke="#1D2B22" stroke-width="1.5"/>
+                <text x="780" y="245" fill="#9CA99F" font-family="JetBrains Mono" font-size="12" font-weight="bold" text-anchor="middle" opacity="0.7">TERMINAL 2 (INTL)</text>
+                <text x="780" y="260" fill="#647268" font-family="JetBrains Mono" font-size="9" text-anchor="middle">PIER INTL • GATES G13-G18</text>
+
+                <!-- Remote Apron Pad -->
+                <rect x="90" y="340" width="160" height="85" rx="3" fill="#090E0B" stroke="#1D2B22" stroke-dasharray="4,4"/>
+                <text x="170" y="385" fill="#647268" font-family="JetBrains Mono" font-size="9" text-anchor="middle">REMOTE PARKING</text>
+
+                <!-- Dynamic Stand Nodes Group (Populated via JS) -->
+                <g id="mapStandsLayer"></g>
+
+                <!-- Docked & Taxiing Aircraft Group (Populated via JS) -->
+                <g id="mapAircraftLayer"></g>
+              </svg>
+
+              <!-- Map Legend Overlay -->
+              <div class="absolute bottom-2 left-2 flex flex-wrap items-center gap-2.5 bg-black/85 px-2.5 py-1.5 rounded border border-aero-border/80 font-mono text-[9px] pointer-events-none backdrop-blur-sm">
+                <span class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-full bg-aero-green"></span><span class="text-white">Stand Available</span></span>
+                <span class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span><span class="text-white">Stand Occupied</span></span>
+                <span class="flex items-center space-x-1"><span class="w-3 h-0.5 bg-aero-green"></span><span class="text-aero-secondary">Active Taxiway</span></span>
+                <span class="flex items-center space-x-1"><span class="w-3 h-1 bg-[#111914] border border-white/40"></span><span class="text-aero-secondary">Runway</span></span>
+              </div>
+            </div>
+
+            <div class="text-[10px] font-mono text-aero-secondary flex items-center justify-between mt-2 pt-2 border-t border-aero-border/60">
+              <span>* Click any stand or aircraft node on the map to inspect rotation turnaround telemetry.</span>
+              <span id="mapOccupiedSummary" class="text-aero-highlight font-semibold">-- Stands Occupied</span>
+            </div>
+          </div>
+
+          <!-- Runway Capacity Bar & Carrier Share (5 cols) -->
+          <div class="lg:col-span-5 space-y-4">
+            
+            <!-- Runway Capacity Chart -->
+            <div class="aero-card p-4">
+              <div class="flex items-center justify-between mb-2 pb-2 border-b border-aero-border text-xs font-mono">
+                <div class="flex items-center space-x-2">
+                  <i data-lucide="bar-chart-2" class="w-4 h-4 text-aero-green"></i>
+                  <span class="text-white font-bold">15-MIN RUNWAY CAPACITY (96 BINS)</span>
+                </div>
+                <span class="text-[10px] text-aero-secondary font-mono">12 Max/Bin</span>
+              </div>
+              <div class="h-44 relative">
+                <canvas id="overviewRunwayChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Carrier Billing Distribution -->
+            <div class="aero-card p-4">
+              <div class="flex items-center justify-between mb-2 pb-2 border-b border-aero-border text-xs font-mono">
+                <div class="flex items-center space-x-2">
+                  <i data-lucide="pie-chart" class="w-4 h-4 text-aero-emerald"></i>
+                  <span class="text-white font-bold">AIRLINE BILLING DISTRIBUTION</span>
+                </div>
+                <span class="text-[10px] text-aero-highlight font-mono">4 Airlines</span>
+              </div>
+              <div class="h-32 relative">
+                <canvas id="overviewAirlineChart"></canvas>
+              </div>
+              <div id="overviewAirlineLegend" class="mt-2 pt-2 border-t border-aero-border/60 space-y-1 text-xs font-mono">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- 4. BOTTOM: FLIGHT MOVEMENT TRACKER & EVENT STREAM -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          
+          <!-- Real-Time Flight Situational Awareness / Movements Table (7 cols) -->
+          <div class="lg:col-span-7 aero-card p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3 border-b border-aero-border pb-2">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="navigation" class="w-4 h-4 text-aero-green"></i>
+                <h3 class="text-xs sm:text-sm font-bold text-white">Active Flight Movement Tracking</h3>
+              </div>
+              <span class="text-[10px] font-mono text-aero-secondary">Situational Awareness</span>
+            </div>
+
+            <div class="overflow-x-auto rounded border border-aero-border">
+              <table class="w-full text-left text-xs font-mono">
+                <thead class="bg-[#090D0A] text-aero-secondary uppercase text-[10px] border-b border-aero-border">
+                  <tr>
+                    <th class="py-2 px-2.5">Flight</th>
+                    <th class="py-2 px-2.5">Dir</th>
+                    <th class="py-2 px-2.5">Aircraft</th>
+                    <th class="py-2 px-2.5">Assigned RWY</th>
+                    <th class="py-2 px-2.5">Stand</th>
+                    <th class="py-2 px-2.5">Phase / Vector</th>
+                    <th class="py-2 px-2.5 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="overviewMovementTrackerBody" class="divide-y divide-aero-border/40 text-[11px] bg-[#0D120F]">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="flex items-center justify-between text-[10px] font-mono text-aero-secondary mt-2 pt-2 border-t border-aero-border/60">
+              <span>Showing synchronized active airspace and ground movements</span>
+              <button onclick="switchTab('flights')" class="text-aero-green hover:underline">Full Flight Board &rarr;</button>
+            </div>
+          </div>
+
+          <!-- Live Event Timeline (5 cols) -->
+          <div class="lg:col-span-5 aero-card p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3 border-b border-aero-border pb-2">
+              <div class="flex items-center space-x-2">
+                <span class="w-2 h-2 rounded-full bg-aero-green animate-pulse"></span>
+                <h3 class="text-xs sm:text-sm font-bold text-white">Operations Event Stream</h3>
+              </div>
+              <span id="overviewEventCount" class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#111914] text-aero-highlight border border-aero-border">0 Executed</span>
+            </div>
+
+            <div id="overviewTimelineContainer" class="space-y-1.5 font-mono text-xs max-h-56 overflow-y-auto pr-1">
+              <div class="text-aero-muted text-center py-6 italic">No events executed yet. Click "STEP EVENT" or "AUTO-RUN DAY".</div>
+            </div>
+
+            <div class="flex items-center justify-between text-[10px] font-mono text-aero-secondary mt-2 pt-2 border-t border-aero-border/60">
+              <span>Timeline updates on chronological command executions</span>
+              <button onclick="switchTab('simulator')" class="text-aero-green hover:underline">Simulator &rarr;</button>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 2: SURVEILLANCE & RADAR WORKSPACE (NEW DEDICATED WORKSPACE) -->
+      <!-- =================================================================== -->
+      <section id="view-surveillance" class="tab-view hidden space-y-4">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-aero-border pb-3">
+          <div>
+            <h1 class="text-base sm:text-lg font-bold text-white tracking-wide flex items-center space-x-2">
+              <i data-lucide="video" class="w-4 h-4 text-aero-green"></i>
+              <span>Airport Surveillance & Visual Intelligence Console</span>
+            </h1>
+            <p class="text-xs text-aero-secondary">Quad-camera multi-perspective runway surveillance, 360° primary radar scope, and airfield surface tracking.</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="toggleSurveillanceFullscreen()" class="px-3 py-1.5 rounded bg-[#111914] text-aero-highlight border border-aero-border hover:border-aero-green text-xs font-mono flex items-center space-x-1.5">
+              <i data-lucide="maximize" class="w-3.5 h-3.5"></i>
+              <span>Fullscreen Mode</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- QUAD CAMERA MULTI-VIEW MATRIX -->
+        <div class="aero-card p-4">
+          <div class="flex items-center justify-between mb-3 border-b border-aero-border pb-2">
+            <span class="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+              <span>Airfield Multi-Perspective Camera Matrix (Quad View)</span>
+            </span>
+            <span class="text-[10px] font-mono text-aero-highlight">4 FEEDS ACTIVE • SIMULATED</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <!-- Cam 1 -->
+            <div class="relative aspect-video rounded bg-black border border-aero-border overflow-hidden group cursor-pointer" onclick="selectCameraFeed(0); switchTab('overview')">
+              <img src="https://images.unsplash.com/photo-1520437358207-323b43b50729?auto=format&fit=crop&w=800&q=80" alt="CAM 01" class="w-full h-full object-cover filter contrast-[1.08] brightness-[0.88]">
+              <div class="absolute top-2 left-2 bg-black/80 px-1.5 py-0.5 rounded text-[9px] font-mono text-aero-green border border-aero-border">
+                CAM-01 • RWY 09/27
+              </div>
+              <div class="absolute bottom-2 left-2 text-[9px] font-mono text-white bg-black/75 px-1 rounded">RVR 2000m</div>
+            </div>
+
+            <!-- Cam 2 -->
+            <div class="relative aspect-video rounded bg-black border border-aero-border overflow-hidden group cursor-pointer" onclick="selectCameraFeed(1); switchTab('overview')">
+              <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=800&q=80" alt="CAM 02" class="w-full h-full object-cover filter contrast-[1.08] brightness-[0.88]">
+              <div class="absolute top-2 left-2 bg-black/80 px-1.5 py-0.5 rounded text-[9px] font-mono text-aero-green border border-aero-border">
+                CAM-02 • MAIN APRON
+              </div>
+              <div class="absolute bottom-2 left-2 text-[9px] font-mono text-white bg-black/75 px-1 rounded">TWY C & PUSHBACK</div>
+            </div>
+
+            <!-- Cam 3 -->
+            <div class="relative aspect-video rounded bg-black border border-aero-border overflow-hidden group cursor-pointer" onclick="selectCameraFeed(2); switchTab('overview')">
+              <img src="https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80" alt="CAM 03" class="w-full h-full object-cover filter contrast-[1.08] brightness-[0.88]">
+              <div class="absolute top-2 left-2 bg-black/80 px-1.5 py-0.5 rounded text-[9px] font-mono text-aero-green border border-aero-border">
+                CAM-03 • DOMESTIC T1
+              </div>
+              <div class="absolute bottom-2 left-2 text-[9px] font-mono text-white bg-black/75 px-1 rounded">PIERS DOM_A & B</div>
+            </div>
+
+            <!-- Cam 4 -->
+            <div class="relative aspect-video rounded bg-black border border-aero-border overflow-hidden group cursor-pointer" onclick="selectCameraFeed(3); switchTab('overview')">
+              <img src="https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&w=800&q=80" alt="CAM 04" class="w-full h-full object-cover filter contrast-[1.08] brightness-[0.88]">
+              <div class="absolute top-2 left-2 bg-black/80 px-1.5 py-0.5 rounded text-[9px] font-mono text-aero-green border border-aero-border">
+                CAM-04 • INTL PIER T2
+              </div>
+              <div class="absolute bottom-2 left-2 text-[9px] font-mono text-white bg-black/75 px-1 rounded">HEAVY STANDS G13-G18</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RADAR & GROUND MOVEMENT CONSOLE SPLIT -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          
+          <!-- Full-Size Radar Console (6 cols) -->
+          <div class="lg:col-span-6 aero-card p-4">
+            <div class="flex items-center justify-between mb-3 border-b border-aero-border pb-2 text-xs font-mono">
+              <span class="text-white font-bold flex items-center space-x-2">
+                <i data-lucide="radar" class="w-4 h-4 text-aero-green"></i>
+                <span>TACTICAL APPROACH RADAR (360° SCOPE)</span>
+              </span>
+              <span class="text-[10px] text-aero-highlight font-mono">ACTIVE SECTOR: 50 NM</span>
+            </div>
+            
+            <div class="relative w-full aspect-square flex items-center justify-center bg-[#050706] rounded border border-aero-border overflow-hidden">
+              <canvas id="surveillanceRadarCanvas" width="560" height="560" class="w-full h-full"></canvas>
+            </div>
+          </div>
+
+          <!-- Airfield Surface Map (6 cols) -->
+          <div class="lg:col-span-6 aero-card p-4">
+            <div class="flex items-center justify-between mb-3 border-b border-aero-border pb-2 text-xs font-mono">
+              <span class="text-white font-bold flex items-center space-x-2">
+                <i data-lucide="map-pin" class="w-4 h-4 text-aero-green"></i>
+                <span>AIRFIELD SURFACE GROUND MOVEMENT</span>
+              </span>
+              <span class="text-[10px] text-aero-green font-mono">24 STANDS • 2 RUNWAYS</span>
+            </div>
+
+            <div class="relative w-full aspect-square bg-[#050706] rounded border border-aero-border overflow-hidden">
+              <svg viewBox="0 0 1000 560" class="w-full h-full">
+                <!-- Mirrored ground movement layout with live positions -->
+                <rect width="1000" height="560" fill="#070A08"/>
+                <rect x="50" y="60" width="900" height="38" rx="2" fill="#111914" stroke="#1D2B22"/>
+                <line x1="120" y1="79" x2="880" y2="79" stroke="#F4F7F4" stroke-width="1.5" stroke-dasharray="16,12" opacity="0.7"/>
+                <rect x="120" y="470" width="760" height="32" rx="2" fill="#111914" stroke="#1D2B22"/>
+                <line x1="180" y1="486" x2="820" y2="486" stroke="#F4F7F4" stroke-width="1.5" stroke-dasharray="14,10" opacity="0.6"/>
+                <path d="M 80,115 L 920,115" stroke="#10B981" stroke-width="2" fill="none" opacity="0.6"/>
+                <polygon points="280,180 580,180 580,310 280,310" fill="#0C130E" stroke="#1D2B22"/>
+                <polygon points="620,190 940,190 940,290 620,290" fill="#0C130E" stroke="#1D2B22"/>
+                <!-- Cloned layer will be rendered here -->
+                <g id="surveillanceStandsLayer"></g>
+              </svg>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 3: FLIGHT OPERATIONS BOARD -->
+      <!-- =================================================================== -->
+      <section id="view-flights" class="tab-view hidden space-y-4">
+        <div class="aero-card p-4">
+          
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 border-b border-aero-border pb-3">
+            <div>
+              <h1 class="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
+                <i data-lucide="plane" class="w-4 h-4 text-aero-green"></i>
+                <span>Flight Operations Master Schedule</span>
+              </h1>
+              <p class="text-xs text-aero-secondary">High-density operational movement list with runway bins, stand allocations, and live statuses.</p>
+            </div>
+
+            <!-- Filters & Search -->
+            <div class="flex flex-wrap items-center gap-2 text-xs">
+              <div class="relative">
+                <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-aero-muted"></i>
+                <input type="text" id="flightsSearchInput" oninput="renderFlightsTable()" placeholder="Search flight, airline, tail, gate..." class="pl-8 pr-3 py-1.5 rounded-md bg-[#050706] border border-aero-border text-white placeholder-aero-muted focus:outline-none focus:border-aero-green text-xs font-mono w-48 sm:w-56">
+              </div>
+
+              <select id="flightsDirFilter" onchange="renderFlightsTable()" class="bg-[#050706] border border-aero-border text-aero-secondary py-1.5 px-2.5 rounded-md focus:outline-none focus:border-aero-green">
+                <option value="ALL">All Movements (ARR + DEP)</option>
+                <option value="ARR">Arrivals Only (ARR)</option>
+                <option value="DEP">Departures Only (DEP)</option>
+              </select>
+
+              <select id="flightsStatusFilter" onchange="renderFlightsTable()" class="bg-[#050706] border border-aero-border text-aero-secondary py-1.5 px-2.5 rounded-md focus:outline-none focus:border-aero-green">
+                <option value="ALL">All Statuses</option>
+                <option value="SCHEDULED">Scheduled / On Time</option>
+                <option value="DELAYED">Delayed</option>
+                <option value="CANCELLED">Cancelled</option>
+                <option value="DIVERTED">Diverted</option>
+              </select>
+
+              <select id="flightsAirlineFilter" onchange="renderFlightsTable()" class="bg-[#050706] border border-aero-border text-aero-secondary py-1.5 px-2.5 rounded-md focus:outline-none focus:border-aero-green">
+                <option value="ALL">All Airlines</option>
+                <option value="KV">KV — Kaveri Air</option>
+                <option value="DW">DW — Deccan Wings</option>
+                <option value="SB">SB — SkyBridge Intl</option>
+                <option value="NX">NX — Nilgiri Express</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- High-Density Responsive Flight Table -->
+          <div class="overflow-x-auto rounded-md border border-aero-border">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-[#090D0A] text-aero-secondary uppercase text-[10px] tracking-wider border-b border-aero-border font-mono">
+                <tr>
+                  <th class="py-2.5 px-3">Flight ID</th>
+                  <th class="py-2.5 px-3">Callsign</th>
+                  <th class="py-2.5 px-3">Rotation</th>
+                  <th class="py-2.5 px-3">Dir</th>
+                  <th class="py-2.5 px-3">Scheduled</th>
+                  <th class="py-2.5 px-3">Runway Slot</th>
+                  <th class="py-2.5 px-3">Stand</th>
+                  <th class="py-2.5 px-3">Aircraft</th>
+                  <th class="py-2.5 px-3">Sector</th>
+                  <th class="py-2.5 px-3">Status</th>
+                  <th class="py-2.5 px-3 text-right">Dossier</th>
+                </tr>
+              </thead>
+              <tbody id="flightsTableBody" class="divide-y divide-aero-border/60 font-mono text-[11px] bg-[#0D120F]">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-aero-secondary mt-3 pt-2 border-t border-aero-border font-mono">
+            <span id="flightsTableCounter">Showing -- flights</span>
+            <span class="text-aero-muted hidden sm:inline">Select any flight row to open detailed dossier drawer &rarr;</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 4: RUNWAY 15-MINUTE SLOTS -->
+      <!-- =================================================================== -->
+      <section id="view-runway" class="tab-view hidden space-y-4">
+        <div class="aero-card p-4">
+          
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 border-b border-aero-border pb-3">
+            <div>
+              <h1 class="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
+                <i data-lucide="sliders" class="w-4 h-4 text-aero-green"></i>
+                <span>Runway Capacity & Movement Slots (15-Minute Bins)</span>
+              </h1>
+              <p class="text-xs text-aero-secondary">
+                Rule 1: Hard ceiling of 12 movements/bin. Rule 3: Delayed DEP (>30m) receive Priority 0. Rule 4: ARR pushed before DEP.
+              </p>
+            </div>
+
+            <div class="flex items-center space-x-2 text-xs">
+              <span class="text-aero-secondary font-mono text-[11px]">Filter Sector:</span>
+              <select id="runwayPeriodFilter" onchange="renderRunwayBins()" class="bg-[#050706] border border-aero-border text-white py-1 px-2.5 rounded-md text-xs font-mono">
+                <option value="ALL">All 24 Hours (96 Bins)</option>
+                <option value="PEAK_MORN">Morning Peak (06:00–09:00)</option>
+                <option value="DAY">Mid-Day (09:00–18:00)</option>
+                <option value="PEAK_EVE">Evening Peak (18:00–21:00)</option>
+                <option value="NIGHT">Night Hours (21:00–06:00)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 96 Bins Visual Grid -->
+          <div id="runwayBinsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 max-h-[640px] overflow-y-auto pr-1">
+            <!-- Dynamically populated -->
+          </div>
+
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 5: GATES & STANDS MATRIX -->
+      <!-- =================================================================== -->
+      <section id="view-gates" class="tab-view hidden space-y-4">
+        <div class="aero-card p-4">
+          
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 border-b border-aero-border pb-3">
+            <div>
+              <h1 class="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
+                <i data-lucide="door-closed" class="w-4 h-4 text-aero-green"></i>
+                <span>Airport Terminal Gate & Stand Management Matrix</span>
+              </h1>
+              <p class="text-xs text-aero-secondary">
+                Stand occupancy window: Arrival -5 min to Departure +25 min. Strict size, swing-gate and international pier enforcement.
+              </p>
+            </div>
+
+            <div class="flex items-center space-x-2 text-xs">
+              <select id="gatesPierFilter" onchange="renderGatesView()" class="bg-[#050706] border border-aero-border text-white py-1 px-2.5 rounded-md font-mono text-xs">
+                <option value="ALL">All Piers (24 Stands)</option>
+                <option value="DOM_A">Pier DOM_A (Gates G01–G08)</option>
+                <option value="DOM_B">Pier DOM_B (Gates G09–G12)</option>
+                <option value="INTL">Pier INTL (Gates G13–G18)</option>
+                <option value="REMOTE">Remote Stands (R01–R06)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Stand State Legend -->
+          <div class="flex flex-wrap items-center gap-3 text-[11px] font-mono text-aero-secondary mb-3 pb-2 border-b border-aero-border/60">
+            <span class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded bg-aero-green border border-aero-mutedGreen"></span><span>Allocated/Active (Emerald)</span></span>
+            <span class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded bg-[#111914] border border-aero-border"></span><span>Idle / Available</span></span>
+            <span class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded bg-amber-500/30 border border-amber-600"></span><span>Reserved Turnaround</span></span>
+          </div>
+
+          <!-- Stand Cards Grid -->
+          <div id="gatesMatrixGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            <!-- Dynamically populated -->
+          </div>
+
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 6: TURNAROUND TASK SCHEDULER -->
+      <!-- =================================================================== -->
+      <section id="view-turnaround" class="tab-view hidden space-y-4">
+        <div class="aero-card p-4">
+          
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 border-b border-aero-border pb-3">
+            <div>
+              <h1 class="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
+                <i data-lucide="wrench" class="w-4 h-4 text-aero-green"></i>
+                <span>Aircraft Turnaround & Ground Handling Scheduler</span>
+              </h1>
+              <p class="text-xs text-aero-secondary">Critical path workflow: Deboarding &rarr; Cleaning, Fuelling, Catering, Security &rarr; Boarding.</p>
+            </div>
+
+            <div class="flex items-center space-x-2 text-xs">
+              <label class="text-aero-secondary font-mono">Rotation:</label>
+              <select id="turnaroundRotationSelect" onchange="renderTurnaroundTasks()" class="bg-[#050706] border border-aero-border text-aero-highlight font-mono py-1 px-3 rounded-md focus:border-aero-green text-xs">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Rotation Pairing Dossier Box -->
+          <div id="turnaroundRotationCard" class="bg-[#090D0A] border border-aero-border rounded-lg p-3.5 mb-4">
+            <!-- Dynamically populated -->
+          </div>
+
+          <!-- Turnaround Tasks Gantt Sequence -->
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between text-xs font-mono text-aero-secondary uppercase tracking-wider">
+              <span>Task Execution Sequence & Team Assignments</span>
+              <span id="turnaroundTasksCount" class="text-aero-green">-- Tasks</span>
+            </div>
+            <div id="turnaroundTasksContainer" class="space-y-2">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- 10 Ground Service Teams Roster -->
+          <div class="mt-6 pt-4 border-t border-aero-border">
+            <h3 class="text-xs font-mono font-bold text-white uppercase tracking-wider mb-2 flex items-center space-x-1.5">
+              <i data-lucide="users" class="w-3.5 h-3.5 text-aero-green"></i>
+              <span>Service Teams Availability Roster (10 Teams)</span>
+            </h3>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs font-mono" id="turnaroundTeamsRoster">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 7: DISRUPTIONS SIMULATOR -->
+      <!-- =================================================================== -->
+      <section id="view-simulator" class="tab-view hidden space-y-4">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          
+          <!-- Left: Inject Custom Disruption Form -->
+          <div class="space-y-4">
+            <div class="aero-card p-4">
+              <h2 class="text-sm font-bold text-white flex items-center space-x-2 mb-1.5">
+                <i data-lucide="zap" class="w-4 h-4 text-aero-green"></i>
+                <span>Inject Operational Disruption</span>
+              </h2>
+              <p class="text-xs text-aero-secondary mb-3">Dynamically trigger delays, gauge swaps, or emergency diversions with live recalculation.</p>
+
+              <form id="disruptionForm" onsubmit="handleCustomDisruption(event)" class="space-y-3 text-xs font-mono">
+                <div>
+                  <label class="block text-aero-secondary mb-1">Disruption Event</label>
+                  <select id="disruptionAction" onchange="updateDisruptionFields()" class="w-full bg-[#050706] border border-aero-border text-white py-1.5 px-2.5 rounded-md focus:border-aero-green text-xs">
+                    <option value="DELAY">Flight Delay (DELAY)</option>
+                    <option value="EARLY">Early Arrival (EARLY)</option>
+                    <option value="CANCEL">Flight Cancellation (CANCEL)</option>
+                    <option value="DIVERSION_IN">Emergency Diversion-In (DVI)</option>
+                    <option value="SWAP">Aircraft Gauge Swap (SWAP)</option>
+                  </select>
+                </div>
+
+                <div id="disruptionFieldFlight">
+                  <label class="block text-aero-secondary mb-1">Target Flight</label>
+                  <select id="disruptionTargetFlight" class="w-full bg-[#050706] border border-aero-border text-white py-1.5 px-2.5 rounded-md focus:border-aero-green text-xs">
+                    <!-- Dynamically populated -->
+                  </select>
+                </div>
+
+                <div id="disruptionFieldTimestamp">
+                  <label class="block text-aero-secondary mb-1">New Event Time (YYYY-MM-DD HH:MM:SS)</label>
+                  <input type="text" id="disruptionTimestamp" value="2026-10-14 16:30:00" class="w-full bg-[#050706] border border-aero-border text-aero-highlight py-1.5 px-2.5 rounded-md focus:border-aero-green text-xs">
+                </div>
+
+                <div id="disruptionFieldReason">
+                  <label class="block text-aero-secondary mb-1">Attribution Category</label>
+                  <select id="disruptionReason" class="w-full bg-[#050706] border border-aero-border text-white py-1.5 px-2.5 rounded-md focus:border-aero-green text-xs">
+                    <option value="AIRLINE">AIRLINE (Delay Penalty Applicable)</option>
+                    <option value="WEATHER">WEATHER (Force Majeure)</option>
+                    <option value="AIRPORT">AIRPORT (Terminal/ATC Hold)</option>
+                  </select>
+                </div>
+
+                <button type="submit" class="w-full py-2 px-3 bg-aero-green text-black font-semibold rounded-md hover:bg-aero-highlight transition shadow-emerald-glow text-xs flex items-center justify-center space-x-1.5 mt-2">
+                  <i data-lucide="play" class="w-3.5 h-3.5 fill-black"></i>
+                  <span>INJECT & RECALCULATE</span>
+                </button>
+              </form>
+            </div>
+
+            <!-- Simulation Controls Card -->
+            <div class="aero-card p-4 space-y-2.5 text-xs font-mono">
+              <span class="text-aero-secondary uppercase tracking-wider block font-semibold text-[11px]">Simulation Commands Execution</span>
+              <div class="grid grid-cols-2 gap-2">
+                <button onclick="stepCommand()" class="p-2 rounded bg-[#111914] hover:bg-[#16221A] text-aero-highlight border border-aero-border hover:border-aero-green text-center font-medium transition">
+                  Step 1 Event
+                </button>
+                <button onclick="runAllCommands()" class="p-2 rounded bg-aero-green text-black hover:bg-aero-highlight font-semibold text-center transition shadow-emerald-subtle">
+                  Run All (98)
+                </button>
+                <button onclick="resetSimulation()" class="col-span-2 p-2 rounded bg-[#0D120F] text-aero-secondary hover:text-red-400 border border-aero-border hover:border-red-900/60 text-center transition">
+                  Reset Simulation
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Sequential 98 Commands Log -->
+          <div class="lg:col-span-2 aero-card p-4 flex flex-col h-[600px]">
+            <div class="flex items-center justify-between mb-3 border-b border-aero-border pb-2.5">
+              <div>
+                <h2 class="text-sm font-bold text-white flex items-center space-x-2">
+                  <i data-lucide="list-ordered" class="w-4 h-4 text-aero-green"></i>
+                  <span>Chronological Operational Timeline (data/commands.txt)</span>
+                </h2>
+                <p class="text-xs text-aero-secondary">98 sequential events for October 14, 2026 operations day.</p>
+              </div>
+              <span id="simulatorRemainingBadge" class="text-xs font-mono text-aero-highlight px-2 py-0.5 rounded bg-[#111914] border border-aero-border">-- remaining</span>
+            </div>
+
+            <div id="simulatorCommandsList" class="flex-1 overflow-y-auto space-y-1.5 pr-1 font-mono text-xs">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 8: BILLING & WHAT-IF SANDBOX -->
+      <!-- =================================================================== -->
+      <section id="view-charges" class="tab-view hidden space-y-4">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          
+          <!-- Left: What-If Fee Calculator Sandbox -->
+          <div class="aero-card p-4 space-y-3 font-mono">
+            <div class="border-b border-aero-border pb-2">
+              <h2 class="text-sm font-bold text-white flex items-center space-x-2">
+                <i data-lucide="calculator" class="w-4 h-4 text-aero-green"></i>
+                <span>What-If Parking Fee Calculator</span>
+              </h2>
+              <p class="text-xs text-aero-secondary font-sans">Simulate variable aircraft turnaround parameters to estimate exact aeronautical tariffs.</p>
+            </div>
+
+            <div class="space-y-3 text-xs">
+              <div>
+                <label class="block text-aero-secondary mb-1">Aircraft Size Gauge</label>
+                <select id="whatifSize" onchange="runWhatIfCalculation()" class="w-full bg-[#050706] border border-aero-border text-white py-1.5 px-2 rounded-md focus:border-aero-green">
+                  <option value="C">Size C (A320, B738) — ₹400 / 15m</option>
+                  <option value="E">Size E (B777, B787, A350) — ₹900 / 15m</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-aero-secondary mb-1">Stand Location Type</label>
+                <select id="whatifStandType" onchange="runWhatIfCalculation()" class="w-full bg-[#050706] border border-aero-border text-white py-1.5 px-2 rounded-md focus:border-aero-green">
+                  <option value="CONTACT">Contact Stand (120 min Free Period)</option>
+                  <option value="REMOTE">Remote Stand (240 min Free Period)</option>
+                </select>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-aero-secondary mb-1">
+                  <span>Turnaround Duration:</span>
+                  <span id="whatifMinutesLabel" class="text-aero-highlight font-bold">180 min</span>
+                </div>
+                <input type="range" id="whatifMinutes" min="30" max="600" step="15" value="180" oninput="document.getElementById('whatifMinutesLabel').innerText = this.value + ' min'; runWhatIfCalculation()" class="w-full">
+              </div>
+
+              <div class="space-y-1.5 text-aero-secondary pt-1">
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" id="whatifAerobridge" checked onchange="runWhatIfCalculation()" class="rounded bg-[#050706] border-aero-border text-aero-green focus:ring-0">
+                  <span class="text-white text-xs">Aerobridge Attached (+₹2,500)</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" id="whatifPeak" onchange="runWhatIfCalculation()" class="rounded bg-[#050706] border-aero-border text-aero-green focus:ring-0">
+                  <span class="text-white text-xs">Peak Hour Movement (+25% Surcharge)</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" id="whatifDelayPenalty" onchange="runWhatIfCalculation()" class="rounded bg-[#050706] border-aero-border text-aero-green focus:ring-0">
+                  <span class="text-white text-xs">Airline Fault Delay (+₹10,000/15m)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Receipt Breakdown -->
+            <div id="whatifReceiptBox" class="bg-[#050706] border border-aero-border rounded-lg p-3 text-xs space-y-1.5 mt-2">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Right: Carrier Invoices & Tariff Master -->
+          <div class="lg:col-span-2 space-y-4">
+            
+            <!-- Invoices Grid -->
+            <div id="airlineInvoicesContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Dynamically populated -->
+            </div>
+
+            <!-- Official Tariff Rules Table -->
+            <div class="aero-card p-4">
+              <h3 class="text-xs font-mono font-bold text-white uppercase tracking-wider mb-2.5 flex items-center space-x-2">
+                <i data-lucide="scale" class="w-3.5 h-3.5 text-aero-green"></i>
+                <span>Aeronautical Tariffs (data/charge_rates.csv)</span>
+              </h3>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+                <div class="p-2.5 rounded bg-[#090D0A] border border-aero-border">
+                  <span class="text-aero-muted block text-[10px] uppercase">PARKING SIZE C</span>
+                  <span class="text-white font-bold">₹400.00</span>
+                  <span class="text-aero-secondary block text-[10px]">per 15m after free</span>
+                </div>
+                <div class="p-2.5 rounded bg-[#090D0A] border border-aero-border">
+                  <span class="text-aero-muted block text-[10px] uppercase">PARKING SIZE E</span>
+                  <span class="text-white font-bold">₹900.00</span>
+                  <span class="text-aero-secondary block text-[10px]">per 15m after free</span>
+                </div>
+                <div class="p-2.5 rounded bg-[#090D0A] border border-aero-border">
+                  <span class="text-aero-muted block text-[10px] uppercase">FREE DURATION</span>
+                  <span class="text-aero-green font-bold">120m / 240m</span>
+                  <span class="text-aero-secondary block text-[10px]">Contact vs Remote</span>
+                </div>
+                <div class="p-2.5 rounded bg-[#090D0A] border border-aero-border">
+                  <span class="text-aero-muted block text-[10px] uppercase">SURCHARGE & DELAY</span>
+                  <span class="text-amber-300 font-bold">+25% / ₹10k</span>
+                  <span class="text-aero-secondary block text-[10px]">Peak / 15m Delay</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 9: CUSTOM FLIGHT PLANNER -->
+      <!-- =================================================================== -->
+      <section id="view-customFlight" class="tab-view hidden space-y-4">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          
+          <!-- Left: Input Form -->
+          <div class="aero-card p-4 space-y-3 font-mono">
+            <div class="border-b border-aero-border pb-2">
+              <h2 class="text-sm font-bold text-white flex items-center space-x-2">
+                <i data-lucide="compass" class="w-4 h-4 text-aero-green"></i>
+                <span>Flight Slot & Stand Feasibility Planner</span>
+              </h2>
+              <p class="text-xs text-aero-secondary font-sans">Dispatcher workspace to test slot availability, gate compatibility, and turnaround tasks.</p>
+            </div>
+
+            <form id="plannerForm" onsubmit="handlePlannerSubmit(event)" class="space-y-3 text-xs">
+              <div>
+                <label class="block text-aero-secondary mb-1">Airline Carrier</label>
+                <select id="plannerAirline" class="w-full bg-[#050706] border border-aero-border text-white py-1.5 px-2 rounded-md focus:border-aero-green">
+                  <option value="KV">KV — Kaveri Air (Prefers G03)</option>
+                  <option value="DW">DW — Deccan Wings (Prefers G09)</option>
+                  <option value="SB">SB — SkyBridge Intl (Prefers G13)</option>
+                  <option value="NX">NX — Nilgiri Express (Prefers G12)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-aero-secondary mb-1">Aircraft Gauge</label>
+                <select id="plannerAircraft" class="w-full bg-[#050706] border border-aero-border text-white py-1.5 px-2 rounded-md focus:border-aero-green">
+                  <option value="A320">A320 (Size C, 180 seats)</option>
+                  <option value="B738">B738 (Size C, 189 seats)</option>
+                  <option value="A321">A321 (Size C, 220 seats)</option>
+                  <option value="B787">B787 (Size E, 290 seats)</option>
+                  <option value="B777">B777 (Size E, 360 seats)</option>
+                  <option value="A350">A350 (Size E, 300 seats)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-aero-secondary mb-1">Inbound Arrival Time</label>
+                <input type="text" id="plannerArrTs" value="2026-10-14 11:15:00" class="w-full bg-[#050706] border border-aero-border text-aero-highlight py-1.5 px-2.5 rounded-md focus:border-aero-green text-xs">
+              </div>
+
+              <div>
+                <label class="block text-aero-secondary mb-1">Outbound Departure Time</label>
+                <input type="text" id="plannerDepTs" value="2026-10-14 13:45:00" class="w-full bg-[#050706] border border-aero-border text-aero-highlight py-1.5 px-2.5 rounded-md focus:border-aero-green text-xs">
+              </div>
+
+              <div class="flex items-center space-x-2 pt-1">
+                <input type="checkbox" id="plannerIntl" class="rounded bg-[#050706] border-aero-border text-aero-green focus:ring-0">
+                <label for="plannerIntl" class="text-white text-xs cursor-pointer">International Sector (Requires INTL pier)</label>
+              </div>
+
+              <button type="submit" class="w-full py-2 px-3 bg-aero-green text-black font-semibold rounded-md hover:bg-aero-highlight transition shadow-emerald-glow text-xs flex items-center justify-center space-x-1.5 mt-2">
+                <i data-lucide="check-circle-2" class="w-3.5 h-3.5 fill-black"></i>
+                <span>EVALUATE FEASIBILITY</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Right: Evaluation Results & Dossier -->
+          <div class="lg:col-span-2 aero-card p-4 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between border-b border-aero-border pb-2.5 mb-3">
+                <h2 class="text-sm font-bold text-white flex items-center space-x-2">
+                  <i data-lucide="clipboard-check" class="w-4 h-4 text-aero-green"></i>
+                  <span>Allocation Feasibility & Turnaround Plan</span>
+                </h2>
+                <span class="text-[10px] font-mono text-aero-secondary">Live Engine Output</span>
+              </div>
+              <div id="plannerResultsContainer" class="space-y-3 font-mono text-xs">
+                <div class="text-aero-muted text-center py-12 italic">Set parameters on the left and click "EVALUATE FEASIBILITY".</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- RIGHT SLIDE-OVER FLIGHT DOSSIER DRAWER -->
+  <!-- ===================================================================== -->
+  <div id="flightDrawerBackdrop" onclick="closeFlightDrawer()" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden transition-opacity"></div>
+  <aside id="flightDrawer" class="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-[#090D0A] border-l border-aero-border flex flex-col transform translate-x-full transition-transform duration-300 shadow-2xl">
+    <div class="p-4 border-b border-aero-border flex items-center justify-between bg-[#080B09]">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded bg-aero-panel border border-aero-border flex items-center justify-center text-aero-green font-mono font-bold text-xs" id="drawerDirectionBadge">
+          ARR
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-white font-mono" id="drawerFlightNo">FLT-XXXX</h3>
+          <p class="text-[10px] text-aero-secondary" id="drawerSubTitle">Rotation ID • Airline</p>
+        </div>
+      </div>
+      <button onclick="closeFlightDrawer()" class="text-aero-secondary hover:text-white p-1 rounded hover:bg-aero-panel transition">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <div id="flightDrawerBody" class="flex-1 overflow-y-auto p-4 space-y-4 font-mono text-xs">
+      <!-- Dynamically populated -->
+    </div>
+
+    <div class="p-3 border-t border-aero-border bg-[#080B09] flex justify-end">
+      <button onclick="closeFlightDrawer()" class="px-4 py-1.5 rounded-md bg-[#111914] hover:bg-[#16221A] text-aero-secondary hover:text-white border border-aero-border text-xs transition">
+        Close Drawer
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===================================================================== -->
+  <!-- JAVASCRIPT APPLICATION CORE -->
+  <!-- ===================================================================== -->
+  <script>
+    // Global Application State
+    const appState = {
+      overview: null,
+      flights: [],
+      runwayBins: [],
+      gates: [],
+      rotations: [],
+      commands: [],
+      charges: [],
+      logs: [],
+      surveillance: null,
+      commandIndex: 0,
+      activeTab: 'overview',
+      // Surveillance state
+      cameraIndex: 0,
+      radarRange: 50,
+      radarFilter: 'ALL',
+      radarSweepActive: true,
+      radarAngle: 0,
+      selectedRadarTarget: null,
+      mapLayers: {
+        aircraft: true,
+        labels: true
+      }
+    };
+
+    let charts = {
+      runway: null,
+      airline: null
+    };
+
+    // Camera feeds repository
+    const CAMERA_FEEDS = [
+      {
+        id: "CAM-01",
+        name: "RUNWAY 09/27 ACTIVE THRESHOLD",
+        rwy: "RWY 09/27",
+        desc: "Touchdown zone and rapid-exit taxiway Alpha surveillance",
+        rvr: "2000M",
+        wind: "270° / 12KT",
+        image: "https://images.unsplash.com/photo-1520437358207-323b43b50729?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        id: "CAM-02",
+        name: "MAIN APRON & TAXIWAY CHARLIE",
+        rwy: "APRON-MAIN",
+        desc: "Pushback corridors, tug movements, and stand servicing",
+        rvr: "VISUAL",
+        wind: "270° / 12KT",
+        image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        id: "CAM-03",
+        name: "DOMESTIC TERMINAL (PIERS DOM_A & B)",
+        rwy: "TERMINAL-1",
+        desc: "Domestic contact aerobridges G01-G12 narrowbody operations",
+        rvr: "VISUAL",
+        wind: "270° / 12KT",
+        image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        id: "CAM-04",
+        name: "INTERNATIONAL TERMINAL (PIER INTL)",
+        rwy: "TERMINAL-2 INTL",
+        desc: "Widebody gates G13-G18 with B777, B787 and A350 airframes",
+        rvr: "VISUAL",
+        wind: "270° / 12KT",
+        image: "https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&w=1200&q=80"
+      }
+    ];
+
+    // Live UTC Clock
+    setInterval(() => {
+      const now = new Date();
+      const timeStr = now.toISOString().slice(11, 19) + ' UTC';
+      const el = document.getElementById('headerUtcClock');
+      if (el) el.innerText = timeStr;
+      const camTime = document.getElementById('camHeroOverlayTime');
+      if (camTime) camTime.innerText = `2026-10-14 ${timeStr}`;
+    }, 1000);
+
+    // Initial Load
+    window.addEventListener('DOMContentLoaded', async () => {
+      setupMobileNav();
+      lucide.createIcons();
+      initRadarCanvas();
+      await refreshAllData();
+      runWhatIfCalculation();
+      startRadarLoop();
+    });
+
+    // Populate Mobile Nav
+    function setupMobileNav() {
+      const desktopNav = document.querySelector('#desktopSidebar nav');
+      const mobileNav = document.getElementById('mobileNavContainer');
+      if (desktopNav && mobileNav) {
+        mobileNav.innerHTML = desktopNav.innerHTML.replaceAll('navBtn-', 'mobileNavBtn-');
+      }
+    }
+
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('mobileSidebar');
+      const backdrop = document.getElementById('mobileSidebarBackdrop');
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+      if (isOpen) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      } else {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      }
+    }
+
+    // Refresh all data from REST API
+    async function refreshAllData() {
+      try {
+        const [overviewRes, flightsRes, runwayRes, gatesRes, rotationsRes, commandsRes, chargesRes, logsRes] = await Promise.all([
+          fetch('/api/overview').then(r => r.json()),
+          fetch('/api/flights').then(r => r.json()),
+          fetch('/api/runway').then(r => r.json()),
+          fetch('/api/gates').then(r => r.json()),
+          fetch('/api/rotations').then(r => r.json()),
+          fetch('/api/commands').then(r => r.json()),
+          fetch('/api/charges').then(r => r.json()),
+          fetch('/api/log').then(r => r.json())
+        ]);
+
+        appState.overview = overviewRes;
+        appState.flights = flightsRes;
+        appState.runwayBins = runwayRes;
+        appState.gates = gatesRes;
+        appState.rotations = rotationsRes;
+        appState.commands = commandsRes.commands;
+        appState.commandIndex = commandsRes.current_index;
+        appState.charges = chargesRes;
+        appState.logs = logsRes;
+
+        // Generate surveillance radar telemetry
+        buildSurveillanceTracks();
+
+        renderOverview();
+        renderFlightsTable();
+        renderRunwayBins();
+        renderGatesView();
+        populateTurnaroundPickers();
+        renderSimulatorCommands();
+        renderChargesView();
+        populateDisruptionTargetFlights();
+        renderAirportMap();
+        renderMovementTracker();
+        lucide.createIcons();
+      } catch (err) {
+        console.error("Failed to refresh telemetry:", err);
+      }
+    }
+
+    // Build deterministic radar and ground tracks from active flights
+    function buildSurveillanceTracks() {
+      const active = appState.flights.filter(f => f.status !== 'CANCELLED');
+      appState.radarTracks = active.map((flt, idx) => {
+        const seed = (idx * 37 + 13) % 100;
+        let base_bearing, base_range, heading, altitude, speed, phase;
+
+        if (flt.direction === 'ARR') {
+          base_bearing = 250 + (seed % 60) - 30; // 220 to 280 deg
+          base_range = 6.0 + (idx % 25) * 2.8; // 6 to 76 NM
+          heading = (85 + (seed % 15) - 7) % 360;
+          altitude = Math.max(1800, Math.round(base_range * 320 + 1200));
+          speed = 155 + (idx % 8) * 12;
+          phase = base_range < 10 ? 'FINAL APPROACH' : (base_range < 30 ? 'ILS DESCENT' : 'EN ROUTE');
+        } else {
+          base_bearing = 70 + (seed % 50); // 70 to 120 deg
+          base_range = 8.0 + (idx % 22) * 3.2; // 8 to 78 NM
+          heading = (95 + (seed % 20) - 10) % 360;
+          altitude = Math.max(3500, Math.round(base_range * 450 + 2000));
+          speed = 240 + (idx % 12) * 15;
+          phase = base_range < 20 ? 'CLIMB OUT' : 'EN ROUTE CRUISE';
+        }
+
+        const rad = (base_bearing * Math.PI) / 180;
+        return {
+          flight_id: flt.flight_id,
+          flight_no: flt.flight_no || flt.flight_id,
+          airline_code: flt.airline_code,
+          aircraft_type: flt.aircraft_type,
+          size_code: flt.size_code,
+          direction: flt.direction,
+          status: flt.status,
+          range_nm: Math.round(base_range * 10) / 10,
+          bearing_deg: Math.round(base_bearing),
+          pos_x: base_range * Math.sin(rad),
+          pos_y: base_range * Math.cos(rad),
+          altitude_ft: Math.min(38000, altitude),
+          speed_kt: speed,
+          heading_deg: heading,
+          phase: phase,
+          assigned_stand: flt.assigned_stand,
+          allocated_bin: flt.allocated_bin
+        };
+      });
+
+      const countEl = document.getElementById('radarActiveCount');
+      if (countEl) countEl.innerText = `${appState.radarTracks.length} Active Tracks`;
+    }
+
+    // Switch Navigation Tabs
+    function switchTab(tabId) {
+      appState.activeTab = tabId;
+      document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('#desktopSidebar nav button, #mobileNavContainer button').forEach(el => el.classList.remove('nav-item-active'));
+
+      const targetView = document.getElementById(`view-${tabId}`);
+      if (targetView) targetView.classList.remove('hidden');
+
+      const desktopBtn = document.getElementById(`navBtn-${tabId}`);
+      if (desktopBtn) desktopBtn.classList.add('nav-item-active');
+
+      const mobileBtn = document.getElementById(`mobileNavBtn-${tabId}`);
+      if (mobileBtn) mobileBtn.classList.add('nav-item-active');
+
+      // Close mobile drawer if open
+      const mobileSidebar = document.getElementById('mobileSidebar');
+      if (mobileSidebar && !mobileSidebar.classList.contains('-translate-x-full')) {
+        toggleMobileSidebar();
+      }
+
+      if (tabId === 'overview') {
+        setTimeout(() => {
+          renderOverviewCharts();
+          renderAirportMap();
+        }, 60);
+      } else if (tabId === 'surveillance') {
+        setTimeout(renderSurveillanceViews, 60);
+      }
+
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // CAMERA SURVEILLANCE LOGIC
+    // =========================================================================
+    function selectCameraFeed(index) {
+      appState.cameraIndex = index;
+      const cam = CAMERA_FEEDS[index];
+      if (!cam) return;
+
+      document.getElementById('camHeroImage').src = cam.image;
+      document.getElementById('camHeroTitle').innerText = `${cam.id} • ${cam.name}`;
+      document.getElementById('camHeroOverlayId').innerText = `${cam.id} [LIVE]`;
+      document.getElementById('camHeroOverlayRwy').innerText = cam.rwy;
+      document.getElementById('camHeroOverlayDesc').innerText = cam.desc;
+
+      // Update switcher buttons
+      const btns = document.querySelectorAll('#camHeroButtonList button');
+      btns.forEach((btn, idx) => {
+        if (idx === index) {
+          btn.className = 'cam-switch-btn px-1.5 py-0.5 rounded bg-aero-green text-black font-bold text-[9px]';
+        } else {
+          btn.className = 'cam-switch-btn px-1.5 py-0.5 rounded bg-[#111914] text-aero-secondary hover:text-white text-[9px]';
+        }
+      });
+    }
+
+    function cycleCameraHero() {
+      const nextIdx = (appState.cameraIndex + 1) % CAMERA_FEEDS.length;
+      selectCameraFeed(nextIdx);
+    }
+
+    function toggleCameraFullscreen() {
+      const container = document.getElementById('camHeroContainer');
+      if (!document.fullscreenElement) {
+        container.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    function toggleSurveillanceFullscreen() {
+      const view = document.getElementById('view-surveillance');
+      if (!document.fullscreenElement) {
+        view.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    // =========================================================================
+    // INTERACTIVE RADAR SCOPE ENGINE (CANVAS 2D)
+    // =========================================================================
+    function initRadarCanvas() {
+      const canvas = document.getElementById('radarCanvas');
+      if (!canvas) return;
+
+      canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const clickX = (e.clientX - rect.left) * scaleX;
+        const clickY = (e.clientY - rect.top) * scaleY;
+
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const R = Math.min(cx, cy) - 20;
+
+        // Find nearest aircraft target
+        const tracks = getFilteredRadarTracks();
+        for (const t of tracks) {
+          const r = (t.range_nm / appState.radarRange) * R;
+          if (r > R) continue;
+          const rad = (t.bearing_deg * Math.PI) / 180;
+          const x = cx + r * Math.sin(rad);
+          const y = cy - r * Math.cos(rad);
+
+          const dist = Math.hypot(clickX - x, clickY - y);
+          if (dist < 18) {
+            appState.selectedRadarTarget = t;
+            openFlightDrawer(t.flight_id);
+            return;
+          }
+        }
+      });
+
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const mouseX = (e.clientX - rect.left) * scaleX;
+        const mouseY = (e.clientY - rect.top) * scaleY;
+
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const R = Math.min(cx, cy) - 20;
+
+        const infoBox = document.getElementById('radarTargetInfo');
+        const tracks = getFilteredRadarTracks();
+        let hovered = null;
+
+        for (const t of tracks) {
+          const r = (t.range_nm / appState.radarRange) * R;
+          if (r > R) continue;
+          const rad = (t.bearing_deg * Math.PI) / 180;
+          const x = cx + r * Math.sin(rad);
+          const y = cy - r * Math.cos(rad);
+
+          if (Math.hypot(mouseX - x, mouseY - y) < 14) {
+            hovered = t;
+            break;
+          }
+        }
+
+        if (hovered) {
+          canvas.style.cursor = 'pointer';
+          infoBox.classList.remove('hidden');
+          document.getElementById('rtCallsign').innerText = hovered.flight_no;
+          document.getElementById('rtDir').innerText = hovered.direction;
+          document.getElementById('rtDir').className = hovered.direction === 'ARR' ? 'text-aero-green' : 'text-aero-highlight';
+          document.getElementById('rtAlt').innerText = `FL${Math.round(hovered.altitude_ft / 100)}`;
+          document.getElementById('rtSpd').innerText = `${hovered.speed_kt} KT`;
+          document.getElementById('rtCoord').innerText = `${hovered.bearing_deg}° / ${hovered.range_nm}NM`;
+          document.getElementById('rtAc').innerText = `${hovered.aircraft_type} (${hovered.size_code})`;
+        } else {
+          canvas.style.cursor = 'crosshair';
+          infoBox.classList.add('hidden');
+        }
+      });
+    }
+
+    function getFilteredRadarTracks() {
+      if (!appState.radarTracks) return [];
+      if (appState.radarFilter === 'ALL') return appState.radarTracks;
+      return appState.radarTracks.filter(t => t.direction === appState.radarFilter);
+    }
+
+    function updateRadarRange() {
+      appState.radarRange = parseInt(document.getElementById('radarRangeSelect').value || 50);
+      document.getElementById('radarScaleLabel').innerText = `SCOPE RANGE: ${appState.radarRange} NM`;
+    }
+
+    function setRadarFilter(filter) {
+      appState.radarFilter = filter;
+      document.querySelectorAll('#rfBtn-ALL, #rfBtn-ARR, #rfBtn-DEP').forEach(btn => {
+        btn.className = 'px-1.5 py-0.5 rounded bg-[#111914] text-aero-secondary hover:text-white border border-aero-border';
+      });
+      document.getElementById(`rfBtn-${filter}`).className = 'px-1.5 py-0.5 rounded bg-aero-green text-black font-bold';
+    }
+
+    function toggleRadarSweep() {
+      appState.radarSweepActive = !appState.radarSweepActive;
+      document.getElementById('radarSweepToggleBtn').innerText = appState.radarSweepActive ? 'Pause' : 'Resume';
+    }
+
+    function startRadarLoop() {
+      function draw() {
+        renderRadarFrame('radarCanvas');
+        if (appState.activeTab === 'surveillance') {
+          renderRadarFrame('surveillanceRadarCanvas');
+        }
+        if (appState.radarSweepActive) {
+          appState.radarAngle = (appState.radarAngle + 0.02) % (Math.PI * 2);
+        }
+        requestAnimationFrame(draw);
+      }
+      requestAnimationFrame(draw);
+    }
+
+    function renderRadarFrame(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const R = Math.min(cx, cy) - 20;
+
+      // Dark radar background with subtle phosphor clear
+      ctx.fillStyle = '#050706';
+      ctx.fillRect(0, 0, w, h);
+
+      // Concentric Emerald Range Rings
+      ctx.strokeStyle = '#1D2B22';
+      ctx.lineWidth = 1;
+      const rings = [0.25, 0.5, 0.75, 1.0];
+      rings.forEach(factor => {
+        ctx.beginPath();
+        ctx.arc(cx, cy, R * factor, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Label ring range
+        const nm = Math.round(appState.radarRange * factor);
+        ctx.fillStyle = '#647268';
+        ctx.font = '9px "JetBrains Mono"';
+        ctx.fillText(`${nm}NM`, cx + 4, cy - R * factor + 11);
+      });
+
+      // Compass Crosshairs & Angle Radial Lines
+      ctx.strokeStyle = 'rgba(29, 43, 34, 0.8)';
+      ctx.beginPath();
+      ctx.moveTo(cx - R, cy); ctx.lineTo(cx + R, cy);
+      ctx.moveTo(cx, cy - R); ctx.lineTo(cx, cy + R);
+      ctx.stroke();
+
+      // Active Runway 09 ILS Extended Centerline (heading 090 / 270)
+      ctx.strokeStyle = 'rgba(34, 197, 94, 0.35)';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(cx - R, cy);
+      ctx.lineTo(cx + R, cy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Radar Azimuth Cardinal Degree Labels
+      ctx.fillStyle = '#10B981';
+      ctx.font = '10px "JetBrains Mono"';
+      ctx.textAlign = 'center';
+      ctx.fillText('360° N', cx, cy - R - 6);
+      ctx.fillText('090° E', cx + R + 18, cy + 3);
+      ctx.fillText('180° S', cx, cy + R + 14);
+      ctx.fillText('270° W', cx - R - 18, cy + 3);
+
+      // Radar Sweep Rotating Line with Phosphor Tail
+      if (appState.radarSweepActive) {
+        const sweepGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+        sweepGrad.addColorStop(0, 'rgba(34, 197, 94, 0.15)');
+        sweepGrad.addColorStop(1, 'rgba(34, 197, 94, 0.0)');
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, R, appState.radarAngle - 0.35, appState.radarAngle);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(34, 197, 94, 0.08)';
+        ctx.fill();
+
+        ctx.strokeStyle = '#4ADE80';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + R * Math.cos(appState.radarAngle), cy + R * Math.sin(appState.radarAngle));
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Aircraft Blips & Vector Tags
+      const tracks = getFilteredRadarTracks();
+      tracks.forEach(t => {
+        const r = (t.range_nm / appState.radarRange) * R;
+        if (r > R) return;
+        const rad = (t.bearing_deg * Math.PI) / 180;
+        const x = cx + r * Math.sin(rad);
+        const y = cy - r * Math.cos(rad);
+
+        const isSelected = appState.selectedRadarTarget && appState.selectedRadarTarget.flight_id === t.flight_id;
+
+        // Heading vector arrow (length 14px)
+        const hRad = (t.heading_deg * Math.PI) / 180;
+        const vx = x + 14 * Math.sin(hRad);
+        const vy = y - 14 * Math.cos(hRad);
+
+        ctx.strokeStyle = isSelected ? '#4ADE80' : '#10B981';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(vx, vy);
+        ctx.stroke();
+
+        // Aircraft position point
+        ctx.fillStyle = isSelected ? '#F4F7F4' : (t.direction === 'ARR' ? '#22C55E' : '#4ADE80');
+        ctx.beginPath();
+        ctx.arc(x, y, isSelected ? 4 : 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (isSelected) {
+          ctx.strokeStyle = '#22C55E';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(x, y, 9, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // Flight Callsign & Altitude Data Tag
+        ctx.fillStyle = isSelected ? '#FFFFFF' : '#9CA99F';
+        ctx.font = '8px "JetBrains Mono"';
+        ctx.textAlign = 'left';
+        ctx.fillText(t.flight_no, x + 6, y - 4);
+        ctx.fillStyle = '#647268';
+        ctx.fillText(`FL${Math.round(t.altitude_ft / 100)}`, x + 6, y + 5);
+      });
+    }
+
+    // =========================================================================
+    // AIRPORT TOP-DOWN MAP & GROUND MOVEMENT RENDERER
+    // =========================================================================
+    function renderAirportMap() {
+      const gStands = document.getElementById('mapStandsLayer');
+      const gAircraft = document.getElementById('mapAircraftLayer');
+      if (!gStands || !appState.gates) return;
+
+      gStands.innerHTML = '';
+      gAircraft.innerHTML = '';
+
+      let occupiedCount = 0;
+
+      appState.gates.forEach(s => {
+        const sid = s.stand_id;
+        const pier = s.pier;
+        const dockedRot = appState.rotations.find(r => r.stand_id === sid);
+        const isOccupied = dockedRot !== undefined;
+        if (isOccupied) occupiedCount++;
+
+        // Map coordinates (SVG 1000x560)
+        let px = 0, py = 0;
+        if (pier === 'DOM_A') {
+          const idx = parseInt(sid.replace('G', '')) - 1;
+          px = 310 + idx * 34;
+          py = 160;
+        } else if (pier === 'DOM_B') {
+          const idx = parseInt(sid.replace('G', '')) - 9;
+          px = 330 + idx * 60;
+          py = 330;
+        } else if (pier === 'INTL') {
+          const idx = parseInt(sid.replace('G', '')) - 13;
+          px = 650 + idx * 48;
+          py = 240;
+        } else {
+          // Remote R01-R06
+          const idx = parseInt(sid.replace('R', '')) - 1;
+          px = 110 + idx * 24;
+          py = 370;
+        }
+
+        // Stand parking slot rect
+        const strokeColor = isOccupied ? '#F59E0B' : '#22C55E';
+        const fillColor = isOccupied ? '#111914' : '#070A08';
+
+        const standElem = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        standElem.setAttribute('class', 'cursor-pointer hover:opacity-80 transition');
+        standElem.onclick = () => {
+          if (dockedRot && dockedRot.arrival) {
+            openFlightDrawer(dockedRot.arrival.flight_id);
+          } else {
+            showToast(`Stand ${sid} (${pier}): ${isOccupied ? 'Occupied' : 'Available for Turnaround'}`, 'info');
+          }
+        };
+
+        standElem.innerHTML = `
+          <rect x="${px - 14}" y="${py - 10}" width="28" height="20" rx="2" fill="${fillColor}" stroke="${strokeColor}" stroke-width="1.2"/>
+          <text x="${px}" y="${py + 4}" fill="${isOccupied ? '#F59E0B' : '#F4F7F4'}" font-family="JetBrains Mono" font-size="8" font-weight="bold" text-anchor="middle">${sid}</text>
+        `;
+        gStands.appendChild(standElem);
+
+        // Render docked aircraft symbol
+        if (isOccupied && appState.mapLayers.aircraft) {
+          const acElem = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          acElem.innerHTML = `
+            <circle cx="${px}" cy="${py + 16}" r="3" fill="#F4F7F4"/>
+            <path d="M ${px - 6},${py + 18} L ${px + 6},${py + 18}" stroke="#F4F7F4" stroke-width="1.2"/>
+            ${appState.mapLayers.labels ? `<text x="${px}" y="${py + 28}" fill="#9CA99F" font-family="JetBrains Mono" font-size="7" text-anchor="middle">${dockedRot.arrival ? dockedRot.arrival.flight_no : dockedRot.rotation_id}</text>` : ''}
+          `;
+          gAircraft.appendChild(acElem);
+        }
+      });
+
+      const summaryEl = document.getElementById('mapOccupiedSummary');
+      if (summaryEl) summaryEl.innerText = `${occupiedCount} / 24 Stands Occupied`;
+    }
+
+    function toggleMapLayer(layer) {
+      appState.mapLayers[layer] = !appState.mapLayers[layer];
+      const btn = document.getElementById(`mapToggle${layer.charAt(0).toUpperCase() + layer.slice(1)}Btn`);
+      if (btn) {
+        btn.className = appState.mapLayers[layer]
+          ? 'px-2 py-0.5 rounded bg-aero-green text-black font-bold text-[10px]'
+          : 'px-2 py-0.5 rounded bg-[#111914] text-aero-secondary hover:text-white border border-aero-border text-[10px]';
+      }
+      renderAirportMap();
+    }
+
+    function resetMapZoom() {
+      const svg = document.getElementById('airportMapSvg');
+      if (svg) svg.setAttribute('viewBox', '0 0 1000 560');
+    }
+
+    // =========================================================================
+    // FLIGHT MOVEMENT SITUATIONAL AWARENESS TRACKER
+    // =========================================================================
+    function renderMovementTracker() {
+      const tbody = document.getElementById('overviewMovementTrackerBody');
+      if (!tbody || !appState.radarTracks) return;
+
+      const topTracks = appState.radarTracks.slice(0, 8);
+      tbody.innerHTML = topTracks.map(t => `
+        <tr class="hover:bg-aero-panel transition cursor-pointer" onclick="openFlightDrawer('${t.flight_id}')">
+          <td class="py-1.5 px-2.5 font-bold text-white">${t.flight_no}</td>
+          <td class="py-1.5 px-2.5 ${t.direction === 'ARR' ? 'text-aero-green' : 'text-aero-highlight'} font-bold">${t.direction}</td>
+          <td class="py-1.5 px-2.5 text-aero-secondary">${t.aircraft_type}</td>
+          <td class="py-1.5 px-2.5 text-white">${t.allocated_bin ? t.allocated_bin.slice(11, 16) : '09L'}</td>
+          <td class="py-1.5 px-2.5 text-aero-highlight font-bold">${t.assigned_stand || 'TBD'}</td>
+          <td class="py-1.5 px-2.5 text-aero-secondary">${t.phase}</td>
+          <td class="py-1.5 px-2.5 text-right">
+            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold ${t.is_delayed ? 'bg-amber-950/60 text-amber-300 border border-amber-800' : 'bg-[#111914] text-aero-green border border-aero-mutedGreen'}">
+              ${t.is_delayed ? 'DELAY' : 'ON TIME'}
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderSurveillanceViews() {
+      renderRadarFrame('surveillanceRadarCanvas');
+      const gStands = document.getElementById('surveillanceStandsLayer');
+      const originStands = document.getElementById('mapStandsLayer');
+      if (gStands && originStands) {
+        gStands.innerHTML = originStands.innerHTML;
+      }
+    }
+
+    // =========================================================================
+    // OVERVIEW TELEMETRY & CHARTS
+    // =========================================================================
+    function renderOverview() {
+      if (!appState.overview) return;
+      const o = appState.overview;
+
+      document.getElementById('kpi-total-flights').innerText = o.total_flights;
+      document.getElementById('kpi-active-flights').innerText = o.active_movements;
+      document.getElementById('kpi-active-movements').innerText = o.active_movements;
+      document.getElementById('kpi-delayed-flights').innerText = o.delayed_flights;
+      document.getElementById('kpi-cancelled-flights').innerText = o.cancelled_flights;
+      document.getElementById('kpi-diverted-flights').innerText = o.diverted_flights;
+      document.getElementById('kpi-gate-occupancy').innerText = `${o.gate_occupancy_pct}%`;
+      document.getElementById('kpi-active-stands').innerText = o.active_stands_count;
+      document.getElementById('kpi-peak-runway').innerText = `${o.peak_runway_movements} / 12`;
+      document.getElementById('kpi-saturated-bins').innerText = o.saturated_runway_bins;
+      document.getElementById('kpi-revenue').innerText = `₹ ${o.total_revenue.toLocaleString('en-IN')}`;
+
+      // Progress metrics
+      const progressPercent = Math.min(100, Math.round((o.command_progress.current / o.command_progress.total) * 100));
+      document.getElementById('sidebarProgressRatio').innerText = `${o.command_progress.current} / ${o.command_progress.total}`;
+      document.getElementById('sidebarProgressBar').style.width = `${progressPercent}%`;
+      document.getElementById('overviewEventCount').innerText = `${o.command_progress.current} / ${o.command_progress.total} Executed`;
+
+      // Timeline logs
+      const logContainer = document.getElementById('overviewTimelineContainer');
+      if (appState.logs && appState.logs.length > 0) {
+        logContainer.innerHTML = appState.logs.slice(-7).reverse().map(l => {
+          let badge = `<span class="text-aero-green font-bold">INFO</span>`;
+          if (l.action.includes('DELAY')) badge = `<span class="text-amber-400 font-bold">DELAY</span>`;
+          else if (l.action.includes('CANCEL')) badge = `<span class="text-red-400 font-bold">CANCEL</span>`;
+          else if (l.action.includes('DIV')) badge = `<span class="text-purple-400 font-bold">DIVERT</span>`;
+          else if (l.action.includes('SWAP')) badge = `<span class="text-cyan-400 font-bold">SWAP</span>`;
+
+          return `
+            <div class="flex items-center space-x-2 py-1 px-2 rounded bg-[#090D0A] border border-aero-border/60">
+              <span class="text-aero-muted text-[11px]">${l.time}</span>
+              ${badge}
+              <span class="text-white font-medium">${l.action}</span>
+              <span class="text-aero-secondary truncate">${l.message}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      renderOverviewCharts();
+    }
+
+    function renderOverviewCharts() {
+      if (!appState.runwayBins || appState.runwayBins.length === 0) return;
+
+      // 1. Runway Capacity Chart across 96 bins
+      const labels = appState.runwayBins.map(b => b.bin_start.split(' ')[1].slice(0, 5));
+      const counts = appState.runwayBins.map(b => b.flights.length);
+
+      const ctxRunway = document.getElementById('overviewRunwayChart').getContext('2d');
+      if (charts.runway) charts.runway.destroy();
+
+      charts.runway = new Chart(ctxRunway, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Allocated Flights',
+              data: counts,
+              backgroundColor: counts.map(v => v >= 12 ? '#EF4444' : (v >= 9 ? '#22C55E' : '#166534')),
+              borderRadius: 2
+            },
+            {
+              label: 'Max Ceiling (12)',
+              data: labels.map(() => 12),
+              type: 'line',
+              borderColor: '#EF4444',
+              borderWidth: 1.5,
+              borderDash: [3, 3],
+              pointRadius: 0,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.parsed.y} flights / 12 capacity`
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#647268', maxTicksLimit: 16, font: { size: 9, family: 'JetBrains Mono' } },
+              grid: { color: 'rgba(29, 43, 34, 0.4)' }
+            },
+            y: {
+              min: 0,
+              max: 14,
+              ticks: { color: '#647268', stepSize: 3, font: { size: 9, family: 'JetBrains Mono' } },
+              grid: { color: 'rgba(29, 43, 34, 0.5)' }
+            }
+          }
+        }
+      });
+
+      // 2. Airline Revenue Donut Chart
+      if (appState.charges && appState.charges.summary) {
+        const carriers = appState.charges.summary;
+        const ctxAir = document.getElementById('overviewAirlineChart').getContext('2d');
+        if (charts.airline) charts.airline.destroy();
+
+        charts.airline = new Chart(ctxAir, {
+          type: 'doughnut',
+          data: {
+            labels: carriers.map(c => c.airline_name),
+            datasets: [{
+              data: carriers.map(c => c.total_charges),
+              backgroundColor: ['#22C55E', '#10B981', '#166534', '#4ADE80'],
+              borderWidth: 1,
+              borderColor: '#050706'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            cutout: '72%'
+          }
+        });
+
+        document.getElementById('overviewAirlineLegend').innerHTML = carriers.map(c => `
+          <div class="flex items-center justify-between py-0.5 text-aero-secondary">
+            <span class="text-white">${c.airline_name} (${c.airline_code})</span>
+            <span class="text-aero-highlight font-bold">₹ ${c.total_charges.toLocaleString('en-IN')}</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    // =========================================================================
+    // FLIGHT OPERATIONS TABLE
+    // =========================================================================
+    function renderFlightsTable() {
+      const search = (document.getElementById('flightsSearchInput').value || '').toLowerCase();
+      const dirFilter = document.getElementById('flightsDirFilter').value;
+      const statusFilter = document.getElementById('flightsStatusFilter').value;
+      const airlineFilter = document.getElementById('flightsAirlineFilter').value;
+
+      const filtered = appState.flights.filter(f => {
+        if (dirFilter !== 'ALL' && f.direction !== dirFilter) return false;
+        if (airlineFilter !== 'ALL' && f.airline_code !== airlineFilter) return false;
+        if (statusFilter !== 'ALL') {
+          if (statusFilter === 'DELAYED' && f.status !== 'DELAYED' && !f.is_delayed_over_30) return false;
+          if (statusFilter === 'CANCELLED' && f.status !== 'CANCELLED') return false;
+          if (statusFilter === 'SCHEDULED' && f.status !== 'SCHEDULED') return false;
+          if (statusFilter === 'DIVERTED' && !f.status.includes('DIVERT')) return false;
+        }
+        if (search) {
+          const hay = `${f.flight_id} ${f.flight_no} ${f.airline_code} ${f.aircraft_reg} ${f.origin_or_destination} ${f.assigned_stand}`.toLowerCase();
+          if (!hay.includes(search)) return false;
+        }
+        return true;
+      });
+
+      const tbody = document.getElementById('flightsTableBody');
+      tbody.innerHTML = filtered.map(f => {
+        let statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#111914] text-aero-green border border-aero-mutedGreen">ON TIME</span>`;
+        if (f.status === 'CANCELLED') {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-950/60 text-red-400 border border-red-800">CANCELLED</span>`;
+        } else if (f.status === 'DELAYED' || f.is_delayed_over_30) {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/60 text-amber-300 border border-amber-800">+${f.delay_minutes || 30}m DELAY</span>`;
+        } else if (f.status.includes('DIVERT')) {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950/60 text-purple-300 border border-purple-800">DIVERTED</span>`;
+        } else if (f.status === 'EARLY') {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/60 text-aero-highlight border border-emerald-800">EARLY</span>`;
+        }
+
+        const dirTag = f.direction === 'ARR'
+          ? `<span class="text-aero-green font-bold">ARR</span>`
+          : `<span class="text-aero-highlight font-bold">DEP</span>`;
+
+        return `
+          <tr class="hover:bg-aero-panel/80 transition cursor-pointer" onclick="openFlightDrawer('${f.flight_id}')">
+            <td class="py-2.5 px-3 font-bold text-white">${f.flight_id}</td>
+            <td class="py-2.5 px-3 text-aero-highlight font-semibold">${f.flight_no || f.flight_id}</td>
+            <td class="py-2.5 px-3 text-aero-secondary">${f.rotation_id}</td>
+            <td class="py-2.5 px-3">${dirTag}</td>
+            <td class="py-2.5 px-3 text-white">${f.scheduled_ts.slice(11, 16)}</td>
+            <td class="py-2.5 px-3 text-aero-highlight font-semibold">${f.allocated_bin ? f.allocated_bin.slice(11, 16) : '-'}</td>
+            <td class="py-2.5 px-3 font-bold ${f.assigned_stand ? 'text-aero-green' : 'text-aero-muted'}">${f.assigned_stand || 'TBD'}</td>
+            <td class="py-2.5 px-3 text-white">${f.aircraft_type} <span class="text-aero-muted text-[10px]">(${f.size_code})</span></td>
+            <td class="py-2.5 px-3 text-aero-secondary">${f.international ? 'INTL' : 'DOM'}</td>
+            <td class="py-2.5 px-3">${statusBadge}</td>
+            <td class="py-2.5 px-3 text-right">
+              <button class="px-2 py-1 rounded bg-[#111914] text-aero-green hover:bg-aero-green hover:text-black border border-aero-border text-[10px] font-semibold transition">
+                VIEW
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('flightsTableCounter').innerText = `Showing ${filtered.length} of ${appState.flights.length} flights`;
+    }
+
+    // Right-Side Slide-Over Flight Dossier Drawer
+    function openFlightDrawer(flightId) {
+      const flight = appState.flights.find(f => f.flight_id === flightId);
+      if (!flight) return;
+
+      const rot = appState.rotations.find(r => r.rotation_id === flight.rotation_id);
+      const stand = appState.gates.find(g => g.stand_id === flight.assigned_stand);
+
+      document.getElementById('drawerDirectionBadge').innerText = flight.direction;
+      document.getElementById('drawerDirectionBadge').className = `w-8 h-8 rounded bg-aero-panel border border-aero-border flex items-center justify-center font-mono font-bold text-xs ${flight.direction === 'ARR' ? 'text-aero-green' : 'text-aero-highlight'}`;
+      document.getElementById('drawerFlightNo').innerText = `${flight.flight_no || flight.flight_id} (${flight.flight_id})`;
+      document.getElementById('drawerSubTitle').innerText = `${flight.rotation_id} • Airline: ${flight.airline_code} • Tail: ${flight.aircraft_reg || 'N/A'}`;
+
+      document.getElementById('flightDrawerBody').innerHTML = `
+        <div class="aero-card p-3 space-y-2">
+          <div class="flex items-center justify-between text-xs border-b border-aero-border pb-2">
+            <span class="text-aero-secondary uppercase">Operational Status</span>
+            <span class="font-bold ${flight.status === 'CANCELLED' ? 'text-red-400' : 'text-aero-green'}">${flight.status}</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span class="text-aero-muted text-[10px] uppercase block">Scheduled Slot</span>
+              <span class="text-white font-bold">${flight.scheduled_ts}</span>
+            </div>
+            <div>
+              <span class="text-aero-muted text-[10px] uppercase block">Runway Allocated</span>
+              <span class="text-aero-highlight font-bold">${flight.allocated_bin || 'Unallocated'}</span>
+            </div>
+            <div>
+              <span class="text-aero-muted text-[10px] uppercase block">Aircraft Model</span>
+              <span class="text-white">${flight.aircraft_type} (Size ${flight.size_code})</span>
+            </div>
+            <div>
+              <span class="text-aero-muted text-[10px] uppercase block">Sector Type</span>
+              <span class="text-white">${flight.international ? 'International Flight' : 'Domestic Sector'}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stand Assignment Details -->
+        <div class="aero-card p-3 space-y-2">
+          <div class="flex items-center justify-between text-xs border-b border-aero-border pb-2">
+            <span class="text-aero-secondary uppercase">Gate Assignment</span>
+            <span class="font-bold text-aero-green text-sm">${flight.assigned_stand || 'None Assigned'}</span>
+          </div>
+          ${stand ? `
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span class="text-aero-muted text-[10px] uppercase block">Pier Terminal</span>
+                <span class="text-white">${stand.pier}</span>
+              </div>
+              <div>
+                <span class="text-aero-muted text-[10px] uppercase block">Stand Type</span>
+                <span class="text-white">${stand.stand_type}</span>
+              </div>
+              <div>
+                <span class="text-aero-muted text-[10px] uppercase block">Aerobridge Attached</span>
+                <span class="text-white">${stand.aerobridge ? 'Yes' : 'No'}</span>
+              </div>
+              <div>
+                <span class="text-aero-muted text-[10px] uppercase block">Walking Distance</span>
+                <span class="text-white">${stand.walking_distance_m} meters</span>
+              </div>
+            </div>
+          ` : '<div class="text-aero-muted italic">Awaiting stand assignment</div>'}
+        </div>
+
+        <!-- Accrued Charges for Rotation -->
+        ${rot && rot.charges && rot.charges.total ? `
+          <div class="aero-card p-3 space-y-2">
+            <span class="text-aero-secondary uppercase text-[11px] block border-b border-aero-border pb-1.5 font-bold">Rotation Billing Breakdown</span>
+            <div class="space-y-1 text-xs text-aero-secondary">
+              <div class="flex justify-between">
+                <span>Ground Stay:</span>
+                <span class="text-white">${rot.charges.duration_min} min (Free: ${rot.charges.free_min} min)</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Billable 15m Increments:</span>
+                <span class="text-white">${rot.charges.blocks_15m} @ ₹${rot.charges.rate_per_block}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Base Parking Fee:</span>
+                <span class="text-white">₹ ${rot.charges.parking_fee.toLocaleString('en-IN')}</span>
+              </div>
+              ${rot.charges.aerobridge_fee ? `
+                <div class="flex justify-between">
+                  <span>Aerobridge Charge:</span>
+                  <span class="text-white">₹ ${rot.charges.aerobridge_fee.toLocaleString('en-IN')}</span>
+                </div>
+              ` : ''}
+              ${rot.charges.peak_fee ? `
+                <div class="flex justify-between text-amber-300">
+                  <span>Peak Surcharge (+25%):</span>
+                  <span>₹ ${rot.charges.peak_fee.toLocaleString('en-IN')}</span>
+                </div>
+              ` : ''}
+              ${rot.charges.delay_penalty ? `
+                <div class="flex justify-between text-red-400">
+                  <span>Airline Delay Penalty:</span>
+                  <span>₹ ${rot.charges.delay_penalty.toLocaleString('en-IN')}</span>
+                </div>
+              ` : ''}
+              <div class="flex justify-between text-aero-green font-bold text-sm pt-2 border-t border-aero-border">
+                <span>Total Charges:</span>
+                <span>₹ ${rot.charges.total.toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+      `;
+
+      document.getElementById('flightDrawerBackdrop').classList.remove('hidden');
+      document.getElementById('flightDrawer').classList.remove('translate-x-full');
+    }
+
+    function closeFlightDrawer() {
+      document.getElementById('flightDrawer').classList.add('translate-x-full');
+      document.getElementById('flightDrawerBackdrop').classList.add('hidden');
+    }
+
+    // =========================================================================
+    // RUNWAY BINS VIEW
+    // =========================================================================
+    function renderRunwayBins() {
+      const filter = document.getElementById('runwayPeriodFilter').value;
+      const container = document.getElementById('runwayBinsGrid');
+
+      const filteredBins = appState.runwayBins.filter(b => {
+        const hour = parseInt(b.bin_start.split(' ')[1].split(':')[0]);
+        if (filter === 'PEAK_MORN') return hour >= 6 && hour < 9;
+        if (filter === 'DAY') return hour >= 9 && hour < 18;
+        if (filter === 'PEAK_EVE') return hour >= 18 && hour < 21;
+        if (filter === 'NIGHT') return hour >= 21 || hour < 6;
+        return true;
+      });
+
+      container.innerHTML = filteredBins.map(b => {
+        const count = b.flights.length;
+        const isSaturated = count >= 12;
+        const isHigh = count >= 9 && count < 12;
+
+        let cardBorder = isSaturated ? 'border-red-600/70 bg-red-950/20' : (isHigh ? 'border-aero-green/60 bg-emerald-950/20' : 'border-aero-border bg-[#0D120F]');
+        let countBadge = isSaturated ? 'bg-red-900/60 text-red-300 border-red-700' : (isHigh ? 'bg-emerald-950 text-aero-green border-aero-mutedGreen' : 'bg-[#111914] text-white border-aero-border');
+
+        return `
+          <div class="p-3 rounded-md border ${cardBorder} font-mono transition">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-bold text-white">${b.bin_start.slice(11, 16)} &ndash; ${b.bin_end.slice(11, 16)}</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded font-bold border ${countBadge}">
+                ${count} / 12
+              </span>
+            </div>
+
+            <div class="w-full bg-[#050706] rounded-full h-1.5 mb-2 overflow-hidden border border-aero-border">
+              <div class="h-full ${isSaturated ? 'bg-red-500' : (isHigh ? 'bg-aero-green' : 'bg-aero-mutedGreen')}" style="width: ${Math.min(100, (count / 12) * 100)}%"></div>
+            </div>
+
+            <div class="flex items-center justify-between text-[10px] text-aero-secondary mb-2">
+              <span>ARR: <span class="text-white font-bold">${b.arrivals}</span> | DEP: <span class="text-white font-bold">${b.departures}</span></span>
+              ${b.delayed_priority > 0 ? `<span class="text-amber-400 font-bold">*${b.delayed_priority} Priority-0</span>` : ''}
+            </div>
+
+            <div class="flex flex-wrap gap-1 pt-1.5 border-t border-aero-border/60">
+              ${b.flights.map(f => `
+                <span class="text-[9px] px-1 py-0.5 rounded bg-[#111914] text-aero-secondary border border-aero-border">
+                  ${f.flight_id}
+                </span>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // GATES & STANDS VIEW
+    // =========================================================================
+    function renderGatesView() {
+      const filter = document.getElementById('gatesPierFilter').value;
+      const container = document.getElementById('gatesMatrixGrid');
+
+      const filteredStands = appState.gates.filter(s => {
+        if (filter !== 'ALL' && s.pier !== filter) return false;
+        return true;
+      });
+
+      container.innerHTML = filteredStands.map(s => {
+        const isOccupied = s.timeline && s.timeline.length > 0;
+        const borderClass = isOccupied ? 'border-aero-green/50 bg-[#0D120F]' : 'border-aero-border bg-[#090D0A]';
+
+        return `
+          <div class="p-3 rounded-md border ${borderClass} font-mono text-xs">
+            <div class="flex items-center justify-between border-b border-aero-border pb-2 mb-2">
+              <div class="flex items-center space-x-2">
+                <span class="text-sm font-bold text-white">${s.stand_id}</span>
+                <span class="text-[10px] px-1.5 py-0.2 rounded bg-[#111914] text-aero-secondary border border-aero-border">${s.pier}</span>
+              </div>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isOccupied ? 'bg-[#111914] text-aero-green border border-aero-mutedGreen' : 'bg-black text-aero-muted border border-aero-border'}">
+                ${s.occupancy_count} Turnarounds
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-1 text-[11px] text-aero-secondary mb-2">
+              <div>Type: <span class="text-white">${s.stand_type}</span></div>
+              <div>Max Gauge: <span class="text-aero-highlight font-bold">${s.max_size_code}</span></div>
+              <div>Aerobridge: <span class="text-white">${s.aerobridge ? 'Yes' : 'No'}</span></div>
+              <div>Swing Gate: <span class="text-white">${s.swing_gate ? 'Yes' : 'No'}</span></div>
+            </div>
+
+            <div class="pt-2 border-t border-aero-border/60 space-y-1">
+              <span class="text-[10px] uppercase text-aero-muted block font-semibold">Scheduled Intervals</span>
+              ${s.timeline && s.timeline.length > 0 ? s.timeline.map(t => `
+                <div class="p-1 rounded bg-[#050706] border border-aero-border flex items-center justify-between text-[10px]">
+                  <span class="text-white font-bold">${t.rotation_id}</span>
+                  <span class="text-aero-highlight">${t.start.slice(11, 16)} &rarr; ${t.end.slice(11, 16)}</span>
+                </div>
+              `).join('') : '<div class="text-aero-muted italic text-[10px]">Stand idle / available</div>'}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // TURNAROUND TASKS VIEW
+    // =========================================================================
+    function populateTurnaroundPickers() {
+      const select = document.getElementById('turnaroundRotationSelect');
+      select.innerHTML = appState.rotations.map(r => `
+        <option value="${r.rotation_id}">${r.rotation_id} — ${r.airline_code} ${r.aircraft_type} (Stand ${r.stand_id || 'TBD'})</option>
+      `).join('');
+
+      renderTurnaroundTasks();
+      renderTurnaroundTeamsRoster();
+    }
+
+    function renderTurnaroundTasks() {
+      const rotId = document.getElementById('turnaroundRotationSelect').value;
+      const rot = appState.rotations.find(r => r.rotation_id === rotId);
+      if (!rot) return;
+
+      const summaryCard = document.getElementById('turnaroundRotationCard');
+      const arr = rot.arrival;
+      const dep = rot.departure;
+
+      summaryCard.innerHTML = `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
+          <div>
+            <span class="text-aero-muted text-[10px] uppercase block">Carrier & Aircraft</span>
+            <span class="text-white font-bold">${rot.airline_name}</span>
+            <span class="text-aero-highlight block text-[11px]">${rot.aircraft_type} (Size ${rot.size_code}) • Tail: ${rot.aircraft_reg}</span>
+          </div>
+          <div>
+            <span class="text-aero-muted text-[10px] uppercase block">Assigned Gate</span>
+            <span class="text-aero-green font-bold text-sm">${rot.stand_id || 'TBD'}</span>
+            <span class="text-aero-secondary block text-[11px]">${arr && arr.international ? 'International Sector' : 'Domestic Turnaround'}</span>
+          </div>
+          <div>
+            <span class="text-aero-muted text-[10px] uppercase block">Inbound ARR</span>
+            <span class="text-white font-bold">${arr ? arr.flight_id : 'None'}</span>
+            <span class="text-aero-secondary block text-[11px]">${arr ? arr.scheduled_ts : '-'}</span>
+          </div>
+          <div>
+            <span class="text-aero-muted text-[10px] uppercase block">Outbound DEP</span>
+            <span class="text-white font-bold">${dep ? dep.flight_id : 'None'}</span>
+            <span class="text-aero-secondary block text-[11px]">${dep ? dep.scheduled_ts : '-'}</span>
+          </div>
+        </div>
+      `;
+
+      const tasksContainer = document.getElementById('turnaroundTasksContainer');
+      const countLabel = document.getElementById('turnaroundTasksCount');
+
+      if (!rot.tasks || rot.tasks.length === 0) {
+        tasksContainer.innerHTML = `<div class="p-4 rounded-md bg-[#050706] text-center text-aero-muted italic text-xs">No ground tasks scheduled for this rotation.</div>`;
+        countLabel.innerText = '0 Tasks';
+        return;
+      }
+
+      countLabel.innerText = `${rot.tasks.length} Tasks Scheduled`;
+      tasksContainer.innerHTML = rot.tasks.map((t, i) => `
+        <div class="p-2.5 rounded-md bg-[#090D0A] border border-aero-border flex flex-col sm:flex-row sm:items-center justify-between gap-2 font-mono text-xs">
+          <div class="flex items-center space-x-3">
+            <span class="w-5 h-5 rounded bg-[#111914] border border-aero-border text-aero-green flex items-center justify-center text-[10px] font-bold">
+              ${i + 1}
+            </span>
+            <span class="text-white font-bold uppercase tracking-wider">${t.task}</span>
+            <span class="text-aero-secondary text-[11px]">Assigned Team: <span class="text-aero-highlight font-semibold">${t.team_id}</span></span>
+          </div>
+          <div class="flex items-center space-x-2 text-[11px]">
+            <span class="text-aero-secondary">${t.start_ts.slice(11, 16)} &rarr; ${t.end_ts.slice(11, 16)}</span>
+            <span class="px-2 py-0.5 rounded bg-[#111914] text-aero-green border border-aero-mutedGreen text-[10px] font-bold">NOMINAL</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderTurnaroundTeamsRoster() {
+      const container = document.getElementById('turnaroundTeamsRoster');
+      const teams = [
+        { id: 'TEAM-01', type: 'PAX_HANDLING', size: 4 },
+        { id: 'TEAM-02', type: 'PAX_HANDLING', size: 5 },
+        { id: 'TEAM-03', type: 'PAX_HANDLING', size: 6 },
+        { id: 'TEAM-04', type: 'CLEANING', size: 6 },
+        { id: 'TEAM-05', type: 'CLEANING', size: 6 },
+        { id: 'TEAM-06', type: 'FUELLING', size: 4 },
+        { id: 'TEAM-07', type: 'FUELLING', size: 4 },
+        { id: 'TEAM-08', type: 'CATERING', size: 6 },
+        { id: 'TEAM-09', type: 'CATERING', size: 6 },
+        { id: 'TEAM-10', type: 'SECURITY', size: 6 }
+      ];
+
+      container.innerHTML = teams.map(t => `
+        <div class="p-2 rounded bg-[#090D0A] border border-aero-border">
+          <div class="flex items-center justify-between text-white font-bold">
+            <span>${t.id}</span>
+            <span class="text-[9px] px-1 rounded bg-[#111914] text-aero-green border border-aero-mutedGreen">${t.size}P</span>
+          </div>
+          <span class="text-[10px] text-aero-secondary block mt-0.5 truncate">${t.type}</span>
+        </div>
+      `).join('');
+    }
+
+    // =========================================================================
+    // SIMULATOR & DISRUPTIONS
+    // =========================================================================
+    function renderSimulatorCommands() {
+      const container = document.getElementById('simulatorCommandsList');
+      const currentIndex = appState.commandIndex || 0;
+      document.getElementById('simulatorRemainingBadge').innerText = `${appState.commands.length - currentIndex} remaining`;
+
+      container.innerHTML = appState.commands.map((cmd, i) => {
+        const isPast = i < currentIndex;
+        const isCurrent = i === currentIndex;
+
+        let borderClass = isPast ? 'border-aero-mutedGreen/40 bg-[#090D0A]' : (isCurrent ? 'border-aero-green bg-[#111914]' : 'border-aero-border/60 bg-[#050706]');
+        let statusBadge = isPast
+          ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#111914] text-aero-green border border-aero-mutedGreen">EXECUTED</span>`
+          : (isCurrent ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-aero-green text-black animate-pulse">NEXT</span>` : `<span class="px-1.5 py-0.5 rounded text-[9px] text-aero-muted border border-aero-border">PENDING</span>`);
+
+        return `
+          <div class="p-2 rounded border ${borderClass} flex items-center justify-between text-xs">
+            <div class="flex items-center space-x-2">
+              <span class="text-aero-muted text-[10px] w-6">#${cmd.id}</span>
+              <span class="text-white font-bold">${cmd.action}</span>
+              <span class="text-aero-secondary text-[11px] truncate max-w-xs sm:max-w-md">${cmd.args.join(' | ')}</span>
+            </div>
+            ${statusBadge}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function populateDisruptionTargetFlights() {
+      const select = document.getElementById('disruptionTargetFlight');
+      select.innerHTML = appState.flights.map(f => `
+        <option value="${f.flight_id}">${f.flight_id} &ndash; ${f.airline_code} (${f.direction} ${f.scheduled_ts.slice(11, 16)})</option>
+      `).join('');
+    }
+
+    function updateDisruptionFields() {
+      const act = document.getElementById('disruptionAction').value;
+      document.getElementById('disruptionFieldFlight').style.display = (act === 'DIVERSION_IN') ? 'none' : 'block';
+      document.getElementById('disruptionFieldTimestamp').style.display = (act === 'CANCEL') ? 'none' : 'block';
+      document.getElementById('disruptionFieldReason').style.display = (act === 'DELAY') ? 'block' : 'none';
+    }
+
+    async function handleCustomDisruption(e) {
+      e.preventDefault();
+      const action = document.getElementById('disruptionAction').value;
+      const flightId = document.getElementById('disruptionTargetFlight').value;
+      const ts = document.getElementById('disruptionTimestamp').value;
+      const reason = document.getElementById('disruptionReason').value;
+
+      let args = [];
+      if (action === 'DELAY') args = [flightId, ts, reason];
+      else if (action === 'EARLY') args = [flightId, ts];
+      else if (action === 'CANCEL') args = [flightId, ts];
+      else if (action === 'DIVERSION_IN') args = ['DVI-CUSTOM', 'SB', 'A350', 'VT-DVC', ts, 'true'];
+      else if (action === 'SWAP') args = ['ROT-001', 'VT-SWP', 'B787', ts];
+
+      try {
+        const res = await fetch('/api/custom-event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, args })
+        }).then(r => r.json());
+
+        showToast(`Disruption Executed: ${res.log.message}`, 'success');
+        await refreshAllData();
+      } catch (err) {
+        showToast(`Failed to inject disruption`, 'error');
+      }
+    }
+
+    async function stepCommand() {
+      try {
+        const res = await fetch('/api/step', { method: 'POST' }).then(r => r.json());
+        if (res.log) {
+          showToast(`Event: ${res.log.action} &mdash; ${res.log.message}`, 'success');
+        }
+        await refreshAllData();
+      } catch (err) {
+        showToast('Step execution failed', 'error');
+      }
+    }
+
+    async function runAllCommands() {
+      try {
+        showToast('Running full operations day simulation...', 'info');
+        await fetch('/api/step-all', { method: 'POST' }).then(r => r.json());
+        showToast('Full day simulation (98 commands) completed!', 'success');
+        await refreshAllData();
+      } catch (err) {
+        showToast('Simulation run failed', 'error');
+      }
+    }
+
+    async function resetSimulation() {
+      if (!confirm("Reset all operational models, gate assignments, and flight statuses back to morning baseline?")) return;
+      try {
+        await fetch('/api/reset', { method: 'POST' }).then(r => r.json());
+        showToast('Operations day reset to initial plan.', 'info');
+        await refreshAllData();
+      } catch (err) {
+        showToast('Reset failed', 'error');
+      }
+    }
+
+    // =========================================================================
+    // BILLING VIEW & WHAT-IF SANDBOX
+    // =========================================================================
+    function renderChargesView() {
+      if (!appState.charges || !appState.charges.summary) return;
+      const container = document.getElementById('airlineInvoicesContainer');
+
+      container.innerHTML = appState.charges.summary.map(a => `
+        <div class="aero-card p-4 font-mono text-xs">
+          <div class="flex items-center justify-between border-b border-aero-border pb-2 mb-2">
+            <div>
+              <span class="text-white font-bold block">${a.airline_name}</span>
+              <span class="text-[10px] text-aero-secondary">${a.airline_code} &bull; ${a.total_rotations} Rotations</span>
+            </div>
+            <span class="text-aero-highlight font-bold text-sm">₹ ${a.total_charges.toLocaleString('en-IN')}</span>
+          </div>
+
+          <div class="space-y-1 text-aero-secondary">
+            <div class="flex justify-between">
+              <span>Base Parking:</span>
+              <span class="text-white">₹ ${a.parking_charges.toLocaleString('en-IN')}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Aerobridge Access:</span>
+              <span class="text-white">₹ ${a.aerobridge_charges.toLocaleString('en-IN')}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Peak Surcharges:</span>
+              <span class="text-amber-300">₹ ${a.peak_surcharges.toLocaleString('en-IN')}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Delay Penalties:</span>
+              <span class="${a.delay_penalties > 0 ? 'text-red-400 font-bold' : 'text-aero-muted'}">₹ ${a.delay_penalties.toLocaleString('en-IN')}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function runWhatIfCalculation() {
+      const size = document.getElementById('whatifSize').value;
+      const standType = document.getElementById('whatifStandType').value;
+      const minutes = parseInt(document.getElementById('whatifMinutes').value || 180);
+      const hasAerobridge = document.getElementById('whatifAerobridge').checked;
+      const isPeak = document.getElementById('whatifPeak').checked;
+      const hasDelayPenalty = document.getElementById('whatifDelayPenalty').checked;
+
+      const freeMin = (standType === 'REMOTE') ? 240 : 120;
+      const billableMin = Math.max(0, minutes - freeMin);
+      const blocks = Math.ceil(billableMin / 15.0);
+      const ratePerBlock = (size === 'E') ? 900.0 : 400.0;
+      const parkingFee = blocks * ratePerBlock;
+      const aerobridgeFee = hasAerobridge ? 2500.0 : 0.0;
+      const peakFee = isPeak ? (parkingFee * 0.25) : 0.0;
+      const penaltyFee = hasDelayPenalty ? 10000.0 : 0.0;
+      const total = parkingFee + aerobridgeFee + peakFee + penaltyFee;
+
+      const box = document.getElementById('whatifReceiptBox');
+      box.innerHTML = `
+        <div class="flex justify-between text-aero-secondary">
+          <span>Free Period Allowance:</span>
+          <span class="text-white">${freeMin} min (${standType})</span>
+        </div>
+        <div class="flex justify-between text-aero-secondary">
+          <span>Billable Excess:</span>
+          <span class="text-white">${billableMin} min &rarr; ${blocks} blocks (15m)</span>
+        </div>
+        <div class="flex justify-between text-aero-secondary">
+          <span>Parking Fee (${blocks} &times; ₹${ratePerBlock}):</span>
+          <span class="text-white">₹ ${parkingFee.toLocaleString('en-IN')}</span>
+        </div>
+        ${aerobridgeFee > 0 ? `
+          <div class="flex justify-between text-aero-secondary">
+            <span>Aerobridge Charge:</span>
+            <span class="text-white">₹ 2,500</span>
+          </div>
+        ` : ''}
+        ${peakFee > 0 ? `
+          <div class="flex justify-between text-amber-300">
+            <span>Peak Hour Surcharge (+25%):</span>
+            <span>₹ ${peakFee.toLocaleString('en-IN')}</span>
+          </div>
+        ` : ''}
+        ${penaltyFee > 0 ? `
+          <div class="flex justify-between text-red-400">
+            <span>Delay Penalty:</span>
+            <span>₹ 10,000</span>
+          </div>
+        ` : ''}
+        <div class="flex justify-between text-aero-green font-bold text-sm pt-2 border-t border-aero-border">
+          <span>Total Projected Tariff:</span>
+          <span>₹ ${total.toLocaleString('en-IN')}</span>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // CUSTOM FLIGHT PLANNER
+    // =========================================================================
+    async function handlePlannerSubmit(e) {
+      e.preventDefault();
+      const payload = {
+        airline_code: document.getElementById('plannerAirline').value,
+        aircraft_type: document.getElementById('plannerAircraft').value,
+        arrival_ts: document.getElementById('plannerArrTs').value,
+        departure_ts: document.getElementById('plannerDepTs').value,
+        international: document.getElementById('plannerIntl').checked
+      };
+
+      try {
+        const res = await fetch('/api/calculate-custom', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(r => r.json());
+
+        const container = document.getElementById('plannerResultsContainer');
+        const st = res.stand_details;
+        const ch = res.charges_estimate;
+
+        container.innerHTML = `
+          <div class="p-3 rounded-md bg-[#111914] border border-aero-green/50 flex items-center space-x-2 text-aero-green font-bold">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            <span>Feasibility Confirmed: Runway Slot & Stand Allocated</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div class="p-2.5 rounded bg-[#090D0A] border border-aero-border">
+              <span class="text-aero-muted text-[10px] uppercase block">Assigned Stand</span>
+              <span class="text-aero-green font-bold text-base">${res.recommended_stand}</span>
+              <span class="text-aero-secondary text-[11px] block">${st ? `${st.stand_type} (${st.pier}) &bull; ${st.walking_distance_m}m` : 'None'}</span>
+            </div>
+            <div class="p-2.5 rounded bg-[#090D0A] border border-aero-border">
+              <span class="text-aero-muted text-[10px] uppercase block">Runway Allocated Bin</span>
+              <span class="text-aero-highlight font-bold text-base">${res.runway_allocated_bin}</span>
+              <span class="text-aero-secondary text-[11px] block">${res.duration_minutes} min ground stay</span>
+            </div>
+          </div>
+
+          <!-- Turnaround Tasks -->
+          <div class="p-2.5 rounded bg-[#090D0A] border border-aero-border">
+            <span class="text-aero-secondary uppercase text-[10px] font-bold block mb-1.5">Scheduled Turnaround Tasks</span>
+            <div class="space-y-1">
+              ${res.estimated_turnaround_tasks && res.estimated_turnaround_tasks.length > 0 ? res.estimated_turnaround_tasks.map(t => `
+                <div class="flex items-center justify-between text-[11px] py-0.5 border-b border-aero-border/40 last:border-0">
+                  <span class="text-white font-bold uppercase">${t.task}</span>
+                  <span class="text-aero-secondary">${t.team_id}</span>
+                  <span class="text-aero-highlight">${t.start_ts.slice(11, 16)} &rarr; ${t.end_ts.slice(11, 16)}</span>
+                </div>
+              `).join('') : '<div class="text-aero-muted italic">No tasks required</div>'}
+            </div>
+          </div>
+
+          <!-- Billing Projection -->
+          <div class="p-2.5 rounded bg-[#090D0A] border border-aero-border text-aero-secondary">
+            <div class="flex justify-between">
+              <span>Free Period:</span>
+              <span class="text-white">${ch.free_minutes} min</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Billable Blocks:</span>
+              <span class="text-white">${ch.billable_blocks_15m} @ ₹${ch.rate_per_block}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Parking Fee:</span>
+              <span class="text-white">₹ ${ch.parking_fee.toLocaleString('en-IN')}</span>
+            </div>
+            <div class="flex justify-between text-aero-green font-bold pt-1.5 border-t border-aero-border mt-1">
+              <span>Estimated Airport Fee:</span>
+              <span>₹ ${ch.total_estimated_fee.toLocaleString('en-IN')}</span>
+            </div>
+          </div>
+        `;
+        lucide.createIcons();
+      } catch (err) {
+        showToast('Planner calculation failed', 'error');
+      }
+    }
+
+    // Toast Notification System
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+
+      let border = 'border-aero-border';
+      let icon = 'info';
+      let textColor = 'text-white';
+
+      if (type === 'success') {
+        border = 'border-aero-green/80 bg-[#0D120F] shadow-emerald-subtle';
+        icon = 'check-circle-2';
+        textColor = 'text-aero-highlight';
+      } else if (type === 'error') {
+        border = 'border-red-600 bg-red-950/80';
+        icon = 'alert-triangle';
+        textColor = 'text-red-300';
+      }
+
+      toast.className = `p-3 rounded-md border ${border} flex items-center justify-between space-x-2.5 font-mono text-xs pointer-events-auto transition transform translate-y-2 opacity-0 shadow-lg`;
+      toast.innerHTML = `
+        <div class="flex items-center space-x-2">
+          <i data-lucide="${icon}" class="w-4 h-4 ${textColor}"></i>
+          <span class="${textColor}">${message}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-aero-secondary hover:text-white">&times;</button>
+      `;
+
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      // Trigger smooth entry
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 20);
+
+      // Auto dismiss after 4 seconds
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+  </script>
+</body>
+</html>
