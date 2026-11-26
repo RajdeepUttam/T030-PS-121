@@ -3,7 +3,8 @@ from parser import load_csv
 from runway import RunwayManager
 from gate_manager import GateManager
 from task_scheduler import TaskScheduler
-from outputs import write_gate_plan, write_task_schedule
+from outputs import write_gate_plan, write_task_schedule, write_charges
+from charges import calculate_charges
 
 
 def to_bool(value):
@@ -111,11 +112,21 @@ def main():
         print(f"Flight ID: {f['flight_id']} | Direction: {f['direction']} | Allocated Bin: {f['allocated_bin']} | Assigned Stand: {f['assigned_stand']}")
     print("-" * 75)
 
+
+    # =====================================================
+    # STEP 7.5: CALCULATE CHARGES
+    # =====================================================
+    print("Calculating charges...")
+    charge_data = calculate_charges(final_flights, stands)
+
+
     # 8. Generate Outputs
     print("\nGenerating Output CSVs...")
     write_gate_plan("gate_plan.csv", final_flights)
     write_task_schedule("task_schedule.csv", scheduled_tasks)
     print("CSV files generated successfully! Check your folder.")
+    # 3. Charges
+    write_charges("charges.csv", charge_data)
 
 if __name__ == "__main__":
     main()

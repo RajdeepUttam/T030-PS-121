@@ -44,3 +44,4 @@ def write_charges(filename, data):
         writer.writeheader()
         for row in data:
             writer.writerow(row)
+
